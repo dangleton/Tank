@@ -48,6 +48,7 @@ public class S3FileStorage implements FileStorage, Serializable {
     private static final Logger LOG = Logger.getLogger(S3FileStorage.class);
 
     private String bucketName;
+    private String extraPath;
     private boolean compress = true;
     private boolean encrypt = true;
 
@@ -58,13 +59,12 @@ public class S3FileStorage implements FileStorage, Serializable {
      */
     public S3FileStorage(String bucketName, boolean compress) {
         super();
-        this.bucketName = bucketName;
+        parseBucketName(bucketName);
         this.compress = compress;
         try {
             TankConfig tankConfig = new TankConfig();
             encrypt = tankConfig.isS3EncryptionEnabled();
             CloudCredentials creds = tankConfig.getVmManagerConfig().getCloudCredentials(CloudProvider.amazon);
-            BasicAWSCredentials credentials = new BasicAWSCredentials(creds.getKeyId(), creds.getKey());
             ClientConfiguration config = new ClientConfiguration();
             if (StringUtils.isNotBlank(System.getProperty("http.proxyHost"))) {
                 try {
@@ -78,20 +78,32 @@ public class S3FileStorage implements FileStorage, Serializable {
 
             }
             if (StringUtils.isNotBlank(creds.getKeyId()) && StringUtils.isNotBlank(creds.getKey())) {
+                BasicAWSCredentials credentials = new BasicAWSCredentials(creds.getKeyId(), creds.getKey());
                 this.s3Client = new AmazonS3Client(credentials, config);
             } else {
                 this.s3Client = new AmazonS3Client(config);
             }
             createBucket(bucketName);
         } catch (Exception ex) {
-            LOG.error(ex.getMessage());
+            LOG.error(ex.getMessage(), ex);
             throw new RuntimeException(ex);
         }
     }
 
+    private void parseBucketName(String name) {
+        if (name.indexOf('/') == -1) {
+            bucketName = name;
+            extraPath = "";
+        } else {
+            bucketName = name.substring(0, name.indexOf('/'));
+            extraPath = name.substring(name.indexOf('/'));
+        }
+        extraPath = FilenameUtils.separatorsToUnix(FilenameUtils.normalize(extraPath + "/"));
+    }
+
     @Override
     public void storeFileData(FileData fileData, InputStream in) {
-        String path = FilenameUtils.separatorsToUnix(FilenameUtils.normalize(fileData.getPath() + "/" + fileData.getFileName()));
+        String path = FilenameUtils.separatorsToUnix(FilenameUtils.normalize(extraPath + fileData.getPath() + "/" + fileData.getFileName()));
         path = StringUtils.stripStart(path, "/");
         OutputStream out = null;
         try {
@@ -127,7 +139,7 @@ public class S3FileStorage implements FileStorage, Serializable {
 
     @Override
     public InputStream readFileData(FileData fileData) {
-        String path = FilenameUtils.separatorsToUnix(FilenameUtils.normalize(fileData.getPath() + "/" + fileData.getFileName()));
+        String path = FilenameUtils.separatorsToUnix(FilenameUtils.normalize(extraPath + fileData.getPath() + "/" + fileData.getFileName()));
         path = StringUtils.stripStart(path, "/");
         InputStream ret = null;
         S3ObjectInputStream objectContent = null;
@@ -167,7 +179,7 @@ public class S3FileStorage implements FileStorage, Serializable {
     @Override
     public boolean exists(FileData fileData) {
         boolean ret = true;
-        String path = FilenameUtils.separatorsToUnix(FilenameUtils.normalize(fileData.getPath() + "/" + fileData.getFileName()));
+        String path = FilenameUtils.separatorsToUnix(FilenameUtils.normalize(extraPath + fileData.getPath() + "/" + fileData.getFileName()));
         path = StringUtils.stripStart(path, "/");
         try {
             s3Client.getObjectMetadata(bucketName, path);
@@ -181,7 +193,7 @@ public class S3FileStorage implements FileStorage, Serializable {
     public List<FileData> listFileData(String path) {
         List<FileData> ret = new ArrayList<FileData>();
         try {
-            String prefix = path;
+            String prefix = extraPath + path;
             if (!prefix.endsWith("/")) {
                 prefix = prefix + "/";
             }
@@ -192,7 +204,10 @@ public class S3FileStorage implements FileStorage, Serializable {
             do {
                 objectListing = s3Client.listObjects(listObjectsRequest);
                 for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
-                    ret.add(new FileData(path, FilenameUtils.getName(FilenameUtils.normalize(objectSummary.getKey()))));
+                    String fileName = FilenameUtils.getName(FilenameUtils.normalize(objectSummary.getKey()));
+                    if (StringUtils.isNotBlank(fileName)) {
+                        ret.add(new FileData(path, fileName));
+                    }
                 }
                 listObjectsRequest.setMarker(objectListing.getNextMarker());
             } while (objectListing.isTruncated());

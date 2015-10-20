@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.intuit.tank.harness.data.HDTestPlan;
 import com.intuit.tank.harness.data.VariableStep;
 import com.intuit.tank.harness.test.data.Variables;
+import com.intuit.tank.runner.TestHttpClient;
 import com.intuit.tank.runner.TestPlanRunner;
 import com.intuit.tank.runner.TestStepContext;
 
@@ -26,7 +27,7 @@ public class VariableRunnerTest {
     @Test
     public void testVariableRunner_1()
         throws Exception {
-        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1);
+        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1, new TestHttpClient());
         testPlanRunner.setHttpClient(null);
         TestStepContext tsc = new TestStepContext(new VariableStep(), new Variables(), "", "", new TimerMap(), testPlanRunner);
 

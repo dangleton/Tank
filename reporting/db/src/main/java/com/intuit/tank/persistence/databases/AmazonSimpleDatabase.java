@@ -406,7 +406,6 @@ public class AmazonSimpleDatabase implements IDatabase {
 
     private void createDatabase() {
         CloudCredentials creds = config.getVmManagerConfig().getCloudCredentials(CloudProvider.amazon);
-        AWSCredentials credentials = new BasicAWSCredentials(creds.getKeyId(), creds.getKey());
         ClientConfiguration config = new ClientConfiguration();
         if (StringUtils.isNotBlank(System.getProperty("http.proxyHost"))) {
             try {
@@ -420,6 +419,7 @@ public class AmazonSimpleDatabase implements IDatabase {
 
         }
         if (StringUtils.isNotBlank(creds.getKeyId()) && StringUtils.isNotBlank(creds.getKey())) {
+            AWSCredentials credentials = new BasicAWSCredentials(creds.getKeyId(), creds.getKey());
             this.db = new AmazonSimpleDBClient(credentials, config);
         } else {
             this.db = new AmazonSimpleDBClient(config);

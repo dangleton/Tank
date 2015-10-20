@@ -76,6 +76,13 @@ public class TestPlanRunner implements Runnable {
         this.threadNumber = threadNumber;
         setHttpClient(initHttpClient());
     }
+    
+    public TestPlanRunner(HDTestPlan testPlan, int threadNumber, TankHttpClient client) {
+        headerMap = new TankConfig().getAgentConfig().getRequestHeaderMap();
+        this.testPlan = testPlan;
+        this.threadNumber = threadNumber;
+        this.httpClient = client;
+    }
 
     /**
      * @return the headerMap

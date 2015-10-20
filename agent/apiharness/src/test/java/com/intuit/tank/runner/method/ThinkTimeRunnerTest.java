@@ -7,6 +7,7 @@ import org.junit.Test;
 import com.intuit.tank.harness.data.HDTestPlan;
 import com.intuit.tank.harness.data.ThinkTimeStep;
 import com.intuit.tank.harness.test.data.Variables;
+import com.intuit.tank.runner.TestHttpClient;
 import com.intuit.tank.runner.TestPlanRunner;
 import com.intuit.tank.runner.TestStepContext;
 
@@ -26,7 +27,7 @@ public class ThinkTimeRunnerTest {
     @Test
     public void testThinkTimeRunner_1()
         throws Exception {
-        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1);
+        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1, new TestHttpClient());
         testPlanRunner.setHttpClient(null);
         TestStepContext tsc = new TestStepContext(new ThinkTimeStep(), new Variables(), "", "", new TimerMap(), testPlanRunner);
 
@@ -49,7 +50,7 @@ public class ThinkTimeRunnerTest {
     @Test
     public void testExecute_1()
         throws Exception {
-        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1);
+        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1, new TestHttpClient());
         testPlanRunner.setHttpClient(null);
         TestStepContext testStepContext = new TestStepContext(new ThinkTimeStep(), new Variables(), "", "", new TimerMap(), testPlanRunner);
         ThinkTimeRunner fixture = new ThinkTimeRunner(testStepContext);
@@ -71,7 +72,7 @@ public class ThinkTimeRunnerTest {
     @Test
     public void testExecute_2()
         throws Exception {
-        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1);
+        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1, new TestHttpClient());
         testPlanRunner.setHttpClient(null);
         TestStepContext testStepContext = new TestStepContext(new ThinkTimeStep(), new Variables(), "", "", new TimerMap(), testPlanRunner);
         ThinkTimeRunner fixture = new ThinkTimeRunner(testStepContext);
@@ -93,7 +94,7 @@ public class ThinkTimeRunnerTest {
     @Test
     public void testExecute_3()
         throws Exception {
-        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1);
+        TestPlanRunner testPlanRunner = new TestPlanRunner(new HDTestPlan(), 1, new TestHttpClient());
         testPlanRunner.setHttpClient(null);
         TestStepContext testStepContext = new TestStepContext(new ThinkTimeStep(), new Variables(), "", "", new TimerMap(), testPlanRunner);
         ThinkTimeRunner fixture = new ThinkTimeRunner(testStepContext);
