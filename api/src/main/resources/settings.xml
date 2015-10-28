@@ -176,6 +176,11 @@
       <!-- Set if you need a proxy to talk to amazon services -->
       <!-- <proxy-host></proxy-host> <proxy-port>80</proxy-port> -->
     </credentials>
+    
+    <!-- Include any tags to add to agent instances. note that a maximum of 10 tags is allowed and tank uses 3 tags. -->
+    <tags>
+        <tag name="admin_contact">tank_admin</tag>
+    </tags>
 
     <!-- Instance descriptions for regions -->
     <instance-descriptions region="US_WEST_1">

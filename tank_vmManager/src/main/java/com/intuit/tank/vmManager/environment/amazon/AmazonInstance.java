@@ -1,24 +1,9 @@
 package com.intuit.tank.vmManager.environment.amazon;
 
-/*
- * #%L
- * VmManager
- * %%
- * Copyright (C) 2011 - 2015 Intuit Inc.
- * %%
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- * #L%
- */
-
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +12,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
@@ -44,7 +28,6 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2AsyncClient;
 import com.amazonaws.services.ec2.model.Address;
 import com.amazonaws.services.ec2.model.AssociateAddressRequest;
-import com.amazonaws.services.ec2.model.AssociateAddressResult;
 import com.amazonaws.services.ec2.model.AttachVolumeRequest;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DescribeAddressesRequest;
@@ -75,6 +58,7 @@ import com.intuit.tank.vm.common.TankConstants;
 import com.intuit.tank.vm.settings.CloudCredentials;
 import com.intuit.tank.vm.settings.CloudProvider;
 import com.intuit.tank.vm.settings.InstanceDescription;
+import com.intuit.tank.vm.settings.InstanceTag;
 import com.intuit.tank.vm.settings.TankConfig;
 import com.intuit.tank.vm.settings.VmInstanceType;
 import com.intuit.tank.vm.vmManager.VMInformation;
@@ -400,7 +384,7 @@ public class AmazonInstance implements IEnvironmentInstance {
     private KeyValuePair[] buildTags(VMInstanceRequest instanceRequest) {
         List<KeyValuePair> pairs = new ArrayList<KeyValuePair>();
         pairs.add(new KeyValuePair("Name", buildNameTag(instanceRequest)));
-        pairs.add(new KeyValuePair("TimeStamp", DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(new Date())));
+
         if (instanceRequest.getJobId() != null) {
             instanceRequest.addUserData(TankConstants.KEY_JOB_ID, instanceRequest.getJobId());
             instanceRequest.addUserData(TankConstants.KEY_CONTROLLER_URL, config.getControllerBase());
@@ -411,6 +395,10 @@ public class AmazonInstance implements IEnvironmentInstance {
                     pairs.add(new KeyValuePair("JobName", jobInstance.getName()));
                 }
             }
+        }
+        List<InstanceTag> tags = config.getVmManagerConfig().getTags();
+        for (InstanceTag tag : tags) {
+            pairs.add(new KeyValuePair(tag.getName(), tag.getValue()));
         }
         return pairs.toArray(new KeyValuePair[pairs.size()]);
     }
