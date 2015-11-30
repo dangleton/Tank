@@ -562,95 +562,6 @@
 
             </variablelist>
 
-<<<<<<< HEAD
-    <section>
-      <title>Schedule Job</title>
-      <para>When you schedule a job, you snapshot it off at that point and can then run it exactly as it is set up at
-        the time. A pop up will show the details of the job you are going to run. 
-        After you schedule a job you will automatically be taken to the Job Queue tab.
-        </para>
-      <para>
-        <mediaobject>
-          <imageobject>
-            <imagedata fileref="images/projects/projects_12.png" format="PNG" align="Center" />
-          </imageobject>
-        </mediaobject>
-      </para>
-      
-
-      <variablelist>
-        <varlistentry>
-          <term>Name</term>
-          <listitem>
-            <para>The name of the job.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>Logging Profile</term>
-          <listitem>
-            <para>How verbose the agent logs should be.</para>
-          </listitem>
-        </varlistentry>
-        
-        <varlistentry>
-          <term>Tank Http Client</term>
-          <listitem>
-            <para>The client implementation you want to use to drive load.</para>
-          </listitem>
-        </varlistentry>
-        
-        <varlistentry>
-          <term>Stop Behavior</term>
-          <listitem>
-            <para>Where you want the script to exit when stop command is issued.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>Location</term>
-          <listitem>
-            <para>Where the test is running. Configured by the administrator.</para>
-          </listitem>
-        </varlistentry>
-        
-        <varlistentry>
-          <term>Agent Instance Type</term>
-          <listitem>
-            <para>The instance type for the agent.</para>
-          </listitem>
-        </varlistentry>
-        
-         <varlistentry>
-          <term>Max Users per Agent</term>
-          <listitem>
-            <para>The number of users each agent should run.</para>
-          </listitem>
-        </varlistentry>
-        
-        <varlistentry>
-          <term>Assign Elastic Ips</term>
-          <listitem>
-            <para>Whether the agents should use an elastic ip that you have reserved. If no ips are available, then the agent will not get an Elastic IP.</para>
-          </listitem>
-        </varlistentry>
-
-      </variablelist>
-      
-      <para>
-        <mediaobject>
-          <imageobject>
-            <imagedata fileref="images/projects/projects_13.png" format="PNG" align="Center" />
-          </imageobject>
-        </mediaobject>
-      </para>
-      <note>
-        <para>
-          It is important that you examine the details of the job to make sure that everything is as you want it.
-        </para>
-      </note>
-    </section>
-=======
             <para>
                 <mediaobject>
                     <imageobject>
@@ -666,7 +577,6 @@
                 </para>
             </note>
         </section>
->>>>>>> release/2015-11-23-UserGuideUpdate
 
         <section>
             <title>Job Queue</title>
