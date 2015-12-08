@@ -26,7 +26,7 @@
               </h:panelGroup>
               <h:panelGroup styleClass="formButton pad15Left">
                 <p:commandButton action="#{jobQueueManager.refreshData()}" value="Refresh" onstart="saveScrollPos()"
-                  oncomplete="getScrollPos()" update=":mainForm:jobTableId, :mainForm:refreshDiv, :vldFormStatus"
+                  oncomplete="getScrollPos()" update=":mainForm:jobTableId, :mainForm:refreshDiv, :vldFormStatus, :tpsForm:tpsDetailsContent, :tpsForm:tpsChartDiv"
                   ajax="true"
                   style="background-image: url(#{request.contextPath}/resources/gfx/16/refresh.png);
 					background-repeat: no-repeat;
@@ -54,7 +54,7 @@
         <h:panelGroup id="refreshDiv" rendered="#{jobQueueManager.refreshEnabled}">
 
           <p:poll id="agentRefreshPoll" interval="#{jobQueueManager.refreshInterval}" autoStart="true"
-            update=":mainForm:jobTableId, :vldFormStatus, :userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent"
+            update=":mainForm:jobTableId, :vldFormStatus, :userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent, :tpsForm:tpsChartDiv"
             onstart="saveScrollPos()" oncomplete="getScrollPos()" listener="#{jobQueueManager.refreshData()}">
           </p:poll>
         </h:panelGroup>
@@ -129,7 +129,7 @@
             style="width:#{jobQueueManager.tablePrefs.getSize('tpsColumn')}px; text-align:right;"
             rendered="#{jobQueueManager.tablePrefs.isVisible('tpsColumn')}">
             <p:commandLink ajax="true" id="lnkTotalTPSBt" action="#{jobQueueManager.setCurrentJobInstanceForTPS(node)}"
-              oncomplete="PF('tpsDetailsPopup').show();" update=":tpsForm:tpsDetailsContent">
+              oncomplete="PF('tpsDetailsPopup').show();" update=":tpsForm">
               <h:outputText value="#{node.tps}" />
             </p:commandLink>
           </p:column>
@@ -490,8 +490,37 @@
             </div>
           </div>
           <div class="vertical-spacer" />
+          
+          </h:panelGroup>
+          <h:panelGroup
+            rendered="#{jobQueueManager.tpsChartModel ne null}"
+            id="chartScript">
 
-          <h:panelGroup rendered="#{jobQueueManager.tpsChartModel ne null}" id="chartScript">
+            <style type="text/css">
+              .ui-selectcheckboxmenu.without-selectall {
+                display: none;
+              }
+            </style>
+            <div class="formRow">
+              <div class="smallFormLabelDiv">
+                <h:outputLabel for="keysSelectCB" value="KeysToShow"
+                  styleClass="formLabel" />
+              </div>
+              <div class="smallFormInputDiv">
+                <p:selectCheckboxMenu id="keysSelectCB"
+                  value="#{jobQueueManager.selectedTpsKeys}"
+                  style="width:300px;" filterMatchMode="contains"
+                  filter="true" label="Select Keys To Display">
+                  <f:selectItems
+                    value="#{jobQueueManager.allTpsKeys}" />
+                  <p:ajax event="change"
+                    listener="#{jobQueueManager.keysChanged}"
+                    update=":tpsForm:tpsChartDiv" />
+                </p:selectCheckboxMenu>
+              </div>
+            </div>
+
+          <h:panelGroup rendered="#{jobQueueManager.tpsChartModel ne null}" id="tpsChartDiv">
             <script type="text/javascript">
       //<![CDATA[
      if( $.jqplot)
@@ -507,7 +536,7 @@
                 max: #{jobQueueManager.tpsChartModel.max},
                 tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                 tickOptions: {
-                    formatString: '%H:%M',
+                    formatString: '%H:%M:%S',
                         angle: -45
                     }
                 },
@@ -581,7 +610,7 @@
       }
       //]]>
       </script>
-            <p:chart type="line" model="#{jobQueueManager.tpsChartModel}" style="height:400px"
+            <p:chart  rendered="#{jobQueueManager.tpsChartModel.series.size() ne 0}" type="line" model="#{jobQueueManager.tpsChartModel}" style="height:400px"
               title="TPS Details over Time" extender="tpsDetailsExtender" />
           </h:panelGroup>
           <div class="vertical-spacer" />

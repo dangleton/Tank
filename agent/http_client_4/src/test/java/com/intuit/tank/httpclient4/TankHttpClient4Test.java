@@ -2,6 +2,7 @@ package com.intuit.tank.httpclient4;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -126,6 +127,23 @@ public class TankHttpClient4Test {
         Assert.assertNotNull(response);
         Assert.assertEquals(200, response.getHttpCode());
         Assert.assertTrue(response.getBody().contains("test-cookie"));
+    }
+    
+    @Test(groups = TestGroups.FUNCTIONAL)
+    public void testCookies() {
+        TankHttpClient4 client = new TankHttpClient4();
+        BaseRequest request = getRequest(client, "http://http2bin.org/cookies/set");
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("MyCookieName", "MyCookieValue");
+        request.setURLVariables(params);
+        request.doGet(null);
+        request = getRequest(client, "http://http2bin.org/cookies");
+        request.doGet(null);
+        BaseResponse response = request.getResponse();
+        Assert.assertNotNull(response);
+        Assert.assertEquals(response.getCookie("MyCookieName"), "MyCookieValue");
+        Assert.assertEquals(200, response.getHttpCode());
+        Assert.assertTrue(response.getBody().contains("myCookieName"));
     }
 
     @Test(groups = TestGroups.FUNCTIONAL)

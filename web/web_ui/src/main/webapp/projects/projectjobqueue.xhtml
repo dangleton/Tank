@@ -33,7 +33,7 @@
         <h:panelGroup styleClass="h-space">
           <p:commandButton id="projectTotalBt" value="User Details" 
             action="#{projectJobQueueManager.setCurrentJobInstanceForUser(projectJobQueueManager.rootNode.data)}" oncomplete="PF('userDetailsPopup').show();"
-            update=":userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent"
+            update=":userDetailsForm:userDetailsContent"
             style=" background-image: url(#{request.contextPath}/resources/gfx/16/chart_curve.png);
                                   background-repeat: no-repeat;
                                   background-position: 3px 5px;
@@ -42,7 +42,7 @@
 
           <p:commandButton id="projectTotalTPSBt" value="TPS Details" 
             action="#{projectJobQueueManager.setCurrentJobInstanceForTPS(projectJobQueueManager.rootNode.data)}" oncomplete="PF('tpsDetailsPopup').show();"
-            update=":userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent"
+            update=":tpsForm"
             style=" background-image: url(#{request.contextPath}/resources/gfx/16/chart_curve.png);
                                   background-repeat: no-repeat;
                                   background-position: 3px 5px;
@@ -67,7 +67,8 @@
 
   <h:panelGroup id="refreshDiv" rendered="#{projectJobQueueManager.refreshEnabled}">
     <p:poll id="refreshPoll" interval="#{projectJobQueueManager.refreshInterval}" autoStart="true"
-      update=":mainForm:projectTabPanelID:jobTableId, :mainForm:messages, :vldDataForm, :userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent"
+      update=":mainForm:projectTabPanelID:jobTableId, :mainForm:messages, :vldDataForm, 
+        :userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent, :tpsForm:tpsChartDiv"
       listener="#{projectJobQueueManager.refreshData()}" />
   </h:panelGroup>
   <div class="vertical-spacer"></div>
@@ -138,7 +139,7 @@
         rendered="#{projectJobQueueManager.tablePrefs.isVisible('tpsColumn')}">
         <p:commandLink ajax="true" id="lnkTps"
           action="#{projectJobQueueManager.setCurrentJobInstanceForTPS(node)}" oncomplete="PF('tpsDetailsPopup').show();"
-          update=":tpsForm:tpsDetailsContent">
+          update=":tpsForm">
             <h:outputText value="#{node.tps}" />
         </p:commandLink>
       </p:column>
