@@ -29,7 +29,7 @@
     
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>reporting-s3</artifactId>
+      <artifactId>reporting-filestorage</artifactId>
       <version>${project.version}</version>
     </dependency>
 

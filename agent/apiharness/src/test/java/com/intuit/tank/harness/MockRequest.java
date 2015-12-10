@@ -44,5 +44,11 @@ public class MockRequest extends BaseRequest {
     public Date getTimeStamp() {
         return date;
     }
+    
+    @Override
+    public void setTimestamp(Date date) {
+        this.date = date;
+        super.setTimestamp(date);
+    }
 
 }

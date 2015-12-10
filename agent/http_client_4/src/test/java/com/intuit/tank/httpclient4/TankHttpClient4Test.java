@@ -143,7 +143,7 @@ public class TankHttpClient4Test {
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getCookie("MyCookieName"), "MyCookieValue");
         Assert.assertEquals(200, response.getHttpCode());
-        Assert.assertTrue(response.getBody().contains("myCookieName"));
+        Assert.assertTrue(response.getBody().contains("MyCookieName"));
     }
 
     @Test(groups = TestGroups.FUNCTIONAL)

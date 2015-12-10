@@ -146,7 +146,7 @@ public class TankOkHttpClientTest {
         request.getHttpclient().setCookie(TankCookie.builder().withName("test-cookie1").withValue("test-value1").withDomain("http2bin.org").withPath("/").build());
         request.doGet(null);
         BaseResponse response = request.getResponse();
-        Assert.assertNull(response.getCookie("test-cookie1"));
+        Assert.assertNotNull(response.getCookie("test-cookie1"));
         Assert.assertNotNull(response);
         Assert.assertEquals(200, response.getHttpCode());
         Assert.assertTrue(response.getBody().contains("test-cookie"));
@@ -156,7 +156,7 @@ public class TankOkHttpClientTest {
         request.getHttpclient().setCookie(TankCookie.builder().withName("test-cookie1").withValue("test-value1").withDomain("http2bin.org").withPath("/").build());
         request.doGet(null);
         response = request.getResponse();
-        Assert.assertNull(response.getCookie("test-cookie"));
+        Assert.assertNotNull(response.getCookie("test-cookie"));
         Assert.assertNotNull(response);
         Assert.assertEquals(200, response.getHttpCode());
         Assert.assertTrue(response.getBody().contains("test-cookie1"));
@@ -176,7 +176,7 @@ public class TankOkHttpClientTest {
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getCookie("MyCookieName"), "MyCookieValue");
         Assert.assertEquals(200, response.getHttpCode());
-        Assert.assertTrue(response.getBody().contains("myCookieName"));
+        Assert.assertTrue(response.getBody().contains("MyCookieName"));
     }
     
 
