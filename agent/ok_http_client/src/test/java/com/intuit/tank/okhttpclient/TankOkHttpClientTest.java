@@ -2,6 +2,7 @@ package com.intuit.tank.okhttpclient;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.BasicConfigurator;
@@ -145,7 +146,7 @@ public class TankOkHttpClientTest {
         request.getHttpclient().setCookie(TankCookie.builder().withName("test-cookie1").withValue("test-value1").withDomain("http2bin.org").withPath("/").build());
         request.doGet(null);
         BaseResponse response = request.getResponse();
-        Assert.assertNull(response.getCookie("test-cookie1"));
+        Assert.assertNotNull(response.getCookie("test-cookie1"));
         Assert.assertNotNull(response);
         Assert.assertEquals(200, response.getHttpCode());
         Assert.assertTrue(response.getBody().contains("test-cookie"));
@@ -155,11 +156,29 @@ public class TankOkHttpClientTest {
         request.getHttpclient().setCookie(TankCookie.builder().withName("test-cookie1").withValue("test-value1").withDomain("http2bin.org").withPath("/").build());
         request.doGet(null);
         response = request.getResponse();
-        Assert.assertNull(response.getCookie("test-cookie"));
+        Assert.assertNotNull(response.getCookie("test-cookie"));
         Assert.assertNotNull(response);
         Assert.assertEquals(200, response.getHttpCode());
         Assert.assertTrue(response.getBody().contains("test-cookie1"));
     }
+    
+    @Test(groups = TestGroups.FUNCTIONAL)
+    public void testCookies() {
+        TankOkHttpClient client = new TankOkHttpClient();
+        BaseRequest request = getRequest(client, "http://http2bin.org/cookies/set");
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("MyCookieName", "MyCookieValue");
+        request.setURLVariables(params);
+        request.doGet(null);
+        request = getRequest(client, "http://http2bin.org/cookies");
+        request.doGet(null);
+        BaseResponse response = request.getResponse();
+        Assert.assertNotNull(response);
+        Assert.assertEquals(response.getCookie("MyCookieName"), "MyCookieValue");
+        Assert.assertEquals(200, response.getHttpCode());
+        Assert.assertTrue(response.getBody().contains("MyCookieName"));
+    }
+    
 
     @Test(groups = TestGroups.FUNCTIONAL)
     public void setHeader() {

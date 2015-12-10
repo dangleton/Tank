@@ -82,6 +82,7 @@ public abstract class JobTreeTableBean implements Serializable {
 
     private static final int MIN_REFRESH = 10;
     private static final int INITIAL_SIZE = 10;
+    private static final long MAX_MILLIS_REFRESH_MODEL = 10000;
 
     private TreeNode rootNode;
 
@@ -122,6 +123,8 @@ public abstract class JobTreeTableBean implements Serializable {
     protected TablePreferences tablePrefs;
     protected TableViewState tableState = new TableViewState();
     private Date lastDate = null;
+    private long lastTpsUpdate;
+    private long lastUserUpdate;
 
     @PostConstruct
     public void init() {
@@ -234,6 +237,9 @@ public abstract class JobTreeTableBean implements Serializable {
      * @return the chartModel
      */
     public TrackingCartesianChartModel getChartModel() {
+        if (this.lastUserUpdate + MAX_MILLIS_REFRESH_MODEL < System.currentTimeMillis()) {
+            initChartModel();
+        }
         return chartModel;
     }
 
@@ -241,6 +247,9 @@ public abstract class JobTreeTableBean implements Serializable {
      * @return the tpsChartModel
      */
     public TrackingCartesianChartModel getTpsChartModel() {
+        if (this.lastTpsUpdate + MAX_MILLIS_REFRESH_MODEL < System.currentTimeMillis()) {
+            initializeTpsModel();
+        }
         return tpsChartModel;
     }
 
@@ -248,6 +257,7 @@ public abstract class JobTreeTableBean implements Serializable {
         LOG.info("Initializing user chart model...");
         chartModel = null;
         if (currentJobInstance != null && currentJobInstance.getStatusDetailMap() != null) {
+            lastUserUpdate = System.currentTimeMillis();
             chartModel = new TrackingCartesianChartModel();
 
             Map<String, ChartSeries> seriesMap = new HashMap<String, ChartSeries>();
@@ -277,6 +287,7 @@ public abstract class JobTreeTableBean implements Serializable {
         MethodTimer mt = new MethodTimer(LOG, getClass(), "initializeTpsModel");
         tpsChartModel = null;
         if (currentJobInstance != null) {
+            this.lastTpsUpdate = System.currentTimeMillis();
             Set<String> keySet = new HashSet<String>();
             List<String> list = selectedTpsKeys.get(currentJobInstance.getName());
             boolean initKeys = false;
@@ -290,7 +301,7 @@ public abstract class JobTreeTableBean implements Serializable {
             tpsChartModel.setExtender("tpsDetailsExtender");
             Map<String, ChartSeries> seriesMap = new HashMap<String, ChartSeries>();
             Map<Date, Map<String, TPSInfo>> tpsDetailMap = getTpsMap();
-            mt.markAndLog("get tpsMap from DynamoDb");
+            mt.markAndLog("get tpsMap from Results Reader");
             List<Date> dateList = new ArrayList<Date>(tpsDetailMap.keySet());
             Collections.sort(dateList);
 //            if (dateList.size() > 0) {

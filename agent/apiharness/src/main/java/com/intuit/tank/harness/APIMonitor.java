@@ -14,6 +14,7 @@ package com.intuit.tank.harness;
  */
 
 import java.util.Date;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -21,6 +22,7 @@ import com.intuit.tank.CloudServiceClient;
 import com.intuit.tank.api.model.v1.cloud.CloudVmStatus;
 import com.intuit.tank.api.model.v1.cloud.ValidationStatus;
 import com.intuit.tank.harness.logging.LogUtil;
+import com.intuit.tank.reporting.api.TPSInfo;
 import com.intuit.tank.reporting.api.TPSInfoContainer;
 import com.intuit.tank.vm.agent.messages.WatsAgentStatusResponse;
 import com.intuit.tank.vm.api.enumerated.JobStatus;

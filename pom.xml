@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.intuit.tank</groupId>
@@ -536,7 +537,7 @@
 
       <dependency>
         <groupId>org.primefaces.themes</groupId>
-        <artifactId>redmond</artifactId>
+        <artifactId>all-themes</artifactId>
         <version>1.0.10</version>
       </dependency>
 
@@ -864,7 +865,8 @@
         <!-- <version>1.1.9</version> -->
         <version>${version-aws-sdk}</version>
       </dependency>
-      <!-- <dependency> <groupId>wsdl4j</groupId> <artifactId>wsdl4j</artifactId> <version>1.6.2-fixed</version> </dependency> -->
+      <!-- <dependency> <groupId>wsdl4j</groupId> <artifactId>wsdl4j</artifactId> 
+        <version>1.6.2-fixed</version> </dependency> -->
       <dependency>
         <groupId>commons-discovery</groupId>
         <artifactId>commons-discovery</artifactId>
@@ -1184,7 +1186,9 @@
           <artifactId>findbugs-maven-plugin</artifactId>
           <version>2.5.2</version>
           <configuration>
-            <!-- Enables analysis which takes more memory but finds more bugs. If you run out of memory, changes the value of the effort element to 'Low'. -->
+            <!-- Enables analysis which takes more memory but finds more 
+              bugs. If you run out of memory, changes the value of the effort element to 
+              'Low'. -->
             <effort>Max</effort>
             <!-- Build doesn't fail if problems are found -->
             <failOnError>false</failOnError>
@@ -1196,7 +1200,8 @@
             <findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
           </configuration>
           <executions>
-            <!-- Ensures that FindBugs inspects source code when project is compiled. -->
+            <!-- Ensures that FindBugs inspects source code when project 
+              is compiled. -->
             <execution>
               <id>analyze-compile</id>
               <phase>compile</phase>
@@ -1459,57 +1464,37 @@
       <name>Jboss maven repo</name>
       <url>http://repository.jboss.org/nexus/content/groups/public</url>
     </repository>
-    <repository>
-      <id>jboss-public-repository-group</id>
-      <name>JBoss 
-    Public Maven Repository Group</name>
-      <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
-    </repository>
-    <repository>
-      <id>thirdparty-releases</id>
-      <name>JBoss Thirdparty 
-    Releases</name>
-      <url>https://repository.jboss.org/nexus/content/repositories/thirdparty-releases</url>
-    </repository>
+    <!-- <repository> <id>jboss-public-repository-group</id> <name>JBoss 
+      Public Maven Repository Group</name> <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url> 
+      </repository> <repository> <id>thirdparty-releases</id> <name>JBoss Thirdparty 
+      Releases</name> <url>https://repository.jboss.org/nexus/content/repositories/thirdparty-releases</url> 
+      </repository> -->
     <repository>
       <id>java.net</id>
       <name>java.net Repository</name>
       <url>http://download.java.net/maven/2</url>
     </repository>
-    <repository>
-      <id>java.net.glassfish</id>
-      <name>GlassFish Maven Repository</name>
-      <url>http://download.java.net/maven/glassfish</url>
-    </repository>
+    <!-- <repository> <id>java.net.glassfish</id> <name>GlassFish Maven Repository</name> 
+      <url>http://download.java.net/maven/glassfish</url> </repository> -->
     <repository>
       <id>prime-repo</id>
       <name>PrimeFaces Maven Repository</name>
       <url>http://repository.primefaces.org</url>
       <layout>default</layout>
     </repository>
-    <repository>
-      <id>codehaus</id>
-      <name>Codehaus Repo</name>
-      <url>http://repository.codehaus.org</url>
-    </repository>
-    <repository>
-      <id>ibiblio</id>
-      <name>Main Ibiblio Repo</name>
-      <url>http://mirrors.ibiblio.org/pub/mirrors/maven2/</url>
-    </repository>
+
+    <!-- <repository> <id>ibiblio</id> <name>Main Ibiblio Repo</name> <url>http://mirrors.ibiblio.org/pub/mirrors/maven2/</url> 
+      </repository> -->
     <repository>
       <id>owr</id>
       <name>ObjectWeb</name>
       <url>http://maven.ow2.org/maven2/</url>
     </repository>
     <repository>
-      <id>Maven Central 1</id>
-      <url>http://repo1.maven.org/maven2</url>
+      <id>Maven Central</id>
+      <url>https://repo1.maven.org/maven2</url>
     </repository>
-    <repository>
-      <id>Maven Central 2</id>
-      <url>http://central.maven.org/maven2</url>
-    </repository>
+
   </repositories>
   <pluginRepositories>
 
@@ -1519,10 +1504,11 @@
       <url>https://repository.jboss.org/nexus/content/groups/public</url>
       <layout>default</layout>
     </pluginRepository>
+
     <pluginRepository>
-      <id>Maven Central 2 plugins</id>
+      <id>Maven Central plugins</id>
       <name>Central</name>
-      <url>http://repo2.maven.org/maven2</url>
+      <url>https://repo1.maven.org/maven2</url>
       <layout>default</layout>
     </pluginRepository>
   </pluginRepositories>

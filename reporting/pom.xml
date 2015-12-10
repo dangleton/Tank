@@ -15,10 +15,11 @@
   <name>Reporting Parent</name>
 
   <modules>
-    <module>db</module>
     <module>api</module>
-    <module>rest</module>
+    <module>db</module>
     <module>local</module>
+    <module>rest</module>
+    <module>filestorage</module>
   </modules>
 
   <dependencies>

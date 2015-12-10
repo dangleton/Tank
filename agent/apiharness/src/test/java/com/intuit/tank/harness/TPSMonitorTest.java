@@ -4,6 +4,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.testng.annotations.Test;
 
 import com.intuit.tank.http.BaseRequest;
@@ -60,6 +63,10 @@ public class TPSMonitorTest {
         TPSMonitor fixture = new TPSMonitor(1);
         String loggingKey = "Test";
         BaseRequest req = new MockRequest();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.MINUTE, -10);
+        req.setTimestamp(cal.getTime());
         fixture.addToMap(loggingKey, req);
         Thread.sleep(1000);
         TPSInfoContainer tpsInfo = fixture.getTPSInfo();

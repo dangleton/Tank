@@ -70,7 +70,7 @@
                         <include>${cert.p12}</include>
                       </includes>
                       <targetPath>${project.build.directory}/tank/tools</targetPath>
-                      
+
                     </resource>
                     <resource>
                       <directory>${project.parent.parent.basedir}/agent/apiharness_pkg/target</directory>
@@ -138,7 +138,7 @@
       <artifactId>tank-common</artifactId>
       <version>${project.version}</version>
     </dependency>
-   
+
 
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -265,7 +265,7 @@
 
     <dependency>
       <groupId>org.primefaces.themes</groupId>
-      <artifactId>redmond</artifactId>
+      <artifactId>all-themes</artifactId>
     </dependency>
 
     <dependency>
