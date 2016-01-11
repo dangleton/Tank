@@ -13,27 +13,17 @@
             <literallayout>
                 <emphasis>Test Data best practice with security in mind:
                 </emphasis>
-
+            </literallayout>
                 Before uploading scripts or test data to Intuit Tank be
-                aware
-                that
-                others will potentially have access to this information. This access can
-                be via Tank controller directly or potentially by
-                capturing the
-                http
-                requests going across the network when running tests. For this reason
+                aware that others will potentially have access to this information. This access can
+                be via Tank controller directly or potentially by capturing the
+                http requests going across the network when running tests. For this reason
                 we ask that you do not store, retrieve sensitive data, or save
                 scripts with hard coded credentials in Intuit Tank. This could include real
                 customer data (PII), trade secrets, employee data, etc.
-                If you
-                have a
-                need to use such data please contact your information security team for
-                guidance before uploading to Intuit Tank. Just for
-                clarification
-                Intuit Tank does
-                encrypt data when storing to S3 and encrypts at rest to the Intuit Tank
-                database.
-            </literallayout>
+                If you have a need to use such data please contact your information security team for
+                guidance before uploading to Intuit Tank. Just for clarification Intuit Tank does
+                encrypt data when storing to S3 and encrypts at rest to the Intuit Tank database.
         </para>
     </caution>
 
