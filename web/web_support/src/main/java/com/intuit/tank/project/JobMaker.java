@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.ejb.TransactionAttribute;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
@@ -31,6 +32,7 @@ import com.intuit.tank.PreferencesBean;
 import com.intuit.tank.ProjectBean;
 import com.intuit.tank.dao.BaseDao;
 import com.intuit.tank.dao.DataFileDao;
+import com.intuit.tank.dao.JobInstanceDao;
 import com.intuit.tank.dao.JobNotificationDao;
 import com.intuit.tank.dao.JobQueueDao;
 import com.intuit.tank.dao.JobRegionDao;
@@ -362,7 +364,6 @@ public class JobMaker implements Serializable {
 
         return ret;
     }
-
     public void addJobToQueue() {
         if (proposedJobInstance != null) {
             MethodTimer mt = new MethodTimer(LOG, this.getClass(), "addJobToQueue");
@@ -371,10 +372,14 @@ public class JobMaker implements Serializable {
             JobQueue queue = jobQueueDao.findOrCreateForProjectId(projectBean.getProject().getId());
             proposedJobInstance.setJobDetails(jobDetails);
             mt.markAndLog("Create Job Details");
+            JobInstanceDao jobInstanceDao = new JobInstanceDao();
+            proposedJobInstance = jobInstanceDao.saveOrUpdate(proposedJobInstance);
             queue.addJob(proposedJobInstance);
+            
             mt.markAndLog("Add job to queue");
             jobQueueDao.saveOrUpdate(queue);
             mt.markAndLog("save queue");
+            
             storeScript(Integer.toString(proposedJobInstance.getId()), workload, proposedJobInstance);
             mt.markAndLog("store script");
             messages.info("Job has been submitted successfully");

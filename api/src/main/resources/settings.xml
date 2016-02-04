@@ -51,7 +51,10 @@
   <mail>
     <mail.smtp.host>localhost</mail.smtp.host>
     <mail.smtp.port>25</mail.smtp.port>
-    <from-email>do_not_reply@mydomain.com</from-email>
+    <mail-from>do_not_reply@mydomain.com</mail-from>
+    <mail.smtp.tls>false</mail.smtp.tls>
+    <mail.smtp.user></mail.smtp.user>
+    <mail.smtp.password></mail.smtp.password>
   </mail>
   
   <reporting>

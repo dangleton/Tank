@@ -27,8 +27,8 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
-import javax.mail.MessagingException;
 import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
@@ -40,7 +40,6 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.intuit.tank.mail.MailService;
 import com.intuit.tank.vm.settings.MailConfig;
 import com.intuit.tank.vm.settings.MailMessage;
 import com.intuit.tank.vm.settings.TankConfig;
@@ -63,15 +62,35 @@ public class TankMailer implements MailService, Serializable {
     public void sendMail(MailMessage message, String... emailAddresses) {
         MailConfig mailConfig = new TankConfig().getMailConfig();
         Properties props = new Properties();
+        props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.host", mailConfig.getSmtpHost());
         props.put("mail.smtp.port", mailConfig.getSmtpPort());
-
-        Session mailSession = Session.getDefaultInstance(props);
-        Message simpleMessage = new MimeMessage(mailSession);
-
-        InternetAddress fromAddress = null;
-        InternetAddress toAddress = null;
+        if (mailConfig.getUseTls()) {
+            props.put("mail.smtps.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+        }
+        final String user = mailConfig.getSmtpUser();
+        final String pass = mailConfig.getSmtpPassword();
+        Session mailSession = null;
         try {
+
+            if (StringUtils.isNotBlank(user) && StringUtils.isNotBlank(pass)) {
+                props.put("mail.smtp.auth", "true");
+                mailSession = Session.getInstance(props,
+                        new javax.mail.Authenticator() {
+                            protected PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(
+                                        user, pass);
+                            }
+                        });
+            } else {
+                mailSession = Session.getDefaultInstance(props);
+            }
+
+            Message simpleMessage = new MimeMessage(mailSession);
+
+            InternetAddress fromAddress = null;
+            InternetAddress toAddress = null;
             fromAddress = new InternetAddress(mailConfig.getMailFrom());
             simpleMessage.setFrom(fromAddress);
             for (String email : emailAddresses) {
@@ -103,12 +122,20 @@ public class TankMailer implements MailService, Serializable {
             simpleMessage.setHeader("MIME-Version", "1.0");
             simpleMessage.setHeader("Content-Type", mp.getContentType());
             logMsg(mailConfig.getSmtpHost(), simpleMessage);
-            if (simpleMessage.getRecipients(RecipientType.TO) != null && simpleMessage.getRecipients(RecipientType.TO).length > 0) {
-                Transport.send(simpleMessage);
+//            LOG.info("Sending Message with credentials " + user + ":" + pass);
+            if (simpleMessage.getRecipients(RecipientType.TO) != null
+                    && simpleMessage.getRecipients(RecipientType.TO).length > 0) {
+                Transport transport = mailSession.getTransport();
+                transport.connect(mailConfig.getSmtpHost(), user, pass);
+                try {
+                    transport.sendMessage(simpleMessage, simpleMessage.getRecipients(RecipientType.TO));
+                } finally {
+                    transport.close();
+                }
             }
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
+        } catch (Exception e) {
+            LOG.error("Error sending mail: " + e, e);
+        } 
     }
 
     private void logMsg(String host, Message m) {

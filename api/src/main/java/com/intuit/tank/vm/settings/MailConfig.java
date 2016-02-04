@@ -36,6 +36,9 @@ public class MailConfig implements Serializable {
     private static final String KEY_MAIL_FROM = "mail-from";
     private static final String KEY_HOST = "mail.smtp.host";
     private static final String KEY_PORT = "mail.smtp.port";
+    private static final String KEY_USER = "mail.smtp.user";
+    private static final String KEY_PASSWORD = "mail.smtp.password";
+    private static final String KEY_USE_TLS = "mail.smtp.tls";
 
     private HierarchicalConfiguration config;
 
@@ -62,6 +65,24 @@ public class MailConfig implements Serializable {
      */
     public String getSmtpPort() {
         return config.getString(KEY_PORT, "25");
+    }
+    /**
+     * @return the smtpPort
+     */
+    public String getSmtpUser() {
+        return config.getString(KEY_USER);
+    }
+    /**
+     * @return the smtpPort
+     */
+    public String getSmtpPassword() {
+        return config.getString(KEY_PASSWORD);
+    }
+    /**
+     * @return the smtpPort
+     */
+    public boolean getUseTls() {
+        return "true".equalsIgnoreCase(config.getString(KEY_USE_TLS, "false"));
     }
 
 
