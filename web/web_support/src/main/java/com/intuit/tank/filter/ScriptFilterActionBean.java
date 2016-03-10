@@ -24,6 +24,7 @@ import javax.inject.Named;
 import com.intuit.tank.project.ScriptFilterAction;
 import com.intuit.tank.script.FailureTypes;
 import com.intuit.tank.script.ResponseContentParser;
+import com.intuit.tank.script.util.ExractkeyLocationTypeUtil;
 import com.intuit.tank.vm.api.enumerated.ScriptFilterActionType;
 import com.intuit.tank.vm.api.enumerated.ValidationType;
 import com.intuit.tank.vm.script.util.AddActionScope;
@@ -45,6 +46,7 @@ public class ScriptFilterActionBean implements Serializable {
     private String key;
     private String valuePrefix;
     private String value;
+    private String locationType;
 
     private FailureTypes[] failureTypes;
 
@@ -68,6 +70,7 @@ public class ScriptFilterActionBean implements Serializable {
         key = "";
         value = "";
         valuePrefix = "";
+        locationType = "";
     }
 
     public void editAction(ScriptFilterAction action) {
@@ -75,12 +78,18 @@ public class ScriptFilterActionBean implements Serializable {
 
         actionType = action.getAction();
         scope = action.getScope();
-        key = action.getKey();
+        key = ExractkeyLocationTypeUtil.getKey(action.getKey());
         String val = action.getValue();
 
-        if (scope.equals(AddActionScope.assignment.getValue()) || scope.equals(AddActionScope.validation.getValue()) ||
-                scope.equals(ReplaceActionScope.assignment.getValue()) ||
-                scope.equals(ReplaceActionScope.validation.getValue())) {
+        if (scope.equals(AddActionScope.assignment.getValue()) || scope.equals(AddActionScope.validation.getValue())
+                || scope.equals(ReplaceActionScope.assignment.getValue())
+                || scope.equals(ReplaceActionScope.validation.getValue())) {
+
+            if ((scope.equals(AddActionScope.validation.getValue()))
+                    || (scope.equals(ReplaceActionScope.validation.getValue()))) {
+                // Format: locationType:key
+                locationType = ExractkeyLocationTypeUtil.getLocationType(action.getKey());
+            }
             valuePrefix = ResponseContentParser.extractCondition(val);
             value = ResponseContentParser.extractValidateValue(val);
         } else {
@@ -95,10 +104,11 @@ public class ScriptFilterActionBean implements Serializable {
         action.setScope(scope);
         action.setKey(key);
 
-        if (scope.equals(AddActionScope.assignment.getValue()) || scope.equals(AddActionScope.validation.getValue()) ||
-                scope.equals(ReplaceActionScope.assignment.getValue()) ||
-                scope.equals(ReplaceActionScope.validation.getValue())) {
+        if (scope.equals(AddActionScope.assignment.getValue()) || scope.equals(AddActionScope.validation.getValue())
+                || scope.equals(ReplaceActionScope.assignment.getValue())
+                || scope.equals(ReplaceActionScope.validation.getValue())) {
             action.setValue(valuePrefix + value);
+            action.setKey(locationType + ":" + key);
         } else {
             action.setValue(value);
         }
@@ -140,7 +150,8 @@ public class ScriptFilterActionBean implements Serializable {
         boolean retVal = true;
         if ((actionType == ScriptFilterActionType.remove && scope.equals(RemoveActionScope.request.getValue()))
                 || (actionType.equals(ScriptFilterActionType.add) && scope.equals(AddActionScope.sleepTime.getValue()))
-                || (actionType == ScriptFilterActionType.replace && scope.equals(ReplaceActionScope.onfail.getValue()))) {
+                || (actionType == ScriptFilterActionType.replace
+                        && scope.equals(ReplaceActionScope.onfail.getValue()))) {
             retVal = false;
         }
         return retVal;
@@ -148,9 +159,9 @@ public class ScriptFilterActionBean implements Serializable {
 
     public boolean isValuePrefixRendered() {
         boolean retVal = false;
-        if (scope.equals(AddActionScope.assignment.getValue()) || scope.equals(AddActionScope.validation.getValue()) ||
-                scope.equals(ReplaceActionScope.validation.getValue()) ||
-                scope.equals(ReplaceActionScope.validation.getValue())) {
+        if (scope.equals(AddActionScope.assignment.getValue()) || scope.equals(AddActionScope.validation.getValue())
+                || scope.equals(ReplaceActionScope.validation.getValue())
+                || scope.equals(ReplaceActionScope.validation.getValue())) {
             retVal = true;
         }
         return retVal;
@@ -181,8 +192,8 @@ public class ScriptFilterActionBean implements Serializable {
 
     public boolean isValueBoxRendered() {
         boolean retVal = true;
-        if (actionType.equals(ScriptFilterActionType.remove)
-                || (actionType == ScriptFilterActionType.replace && scope.equals(ReplaceActionScope.onfail.getValue()))) {
+        if (actionType.equals(ScriptFilterActionType.remove) || (actionType == ScriptFilterActionType.replace
+                && scope.equals(ReplaceActionScope.onfail.getValue()))) {
             retVal = false;
         }
         return retVal;
@@ -191,6 +202,15 @@ public class ScriptFilterActionBean implements Serializable {
     public boolean isOnFailOptionsRendered() {
         boolean retVal = false;
         if (actionType == ScriptFilterActionType.replace && scope.equals(ReplaceActionScope.onfail.getValue())) {
+            retVal = true;
+        }
+        return retVal;
+    }
+
+    public boolean isLocationTypeRendered() {
+        boolean retVal = false;
+        if ((actionType == ScriptFilterActionType.add || actionType == ScriptFilterActionType.replace)
+                && scope.equals(ReplaceActionScope.validation.getValue())) {
             retVal = true;
         }
         return retVal;
@@ -293,6 +313,21 @@ public class ScriptFilterActionBean implements Serializable {
      */
     public void setValue(String value) {
         this.value = value;
+    }
+
+    /**
+     * @return the locationType
+     */
+    public String getLocationType() {
+        return locationType;
+    }
+
+    /**
+     * @param locationType
+     *            the locationType to set
+     */
+    public void setLocationType(String locationType) {
+        this.locationType = locationType;
     }
 
 }
