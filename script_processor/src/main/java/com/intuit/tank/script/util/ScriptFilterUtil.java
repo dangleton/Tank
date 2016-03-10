@@ -46,6 +46,7 @@ import com.intuit.tank.tools.script.LoggingOutputLogger;
 import com.intuit.tank.tools.script.ScriptRunner;
 import com.intuit.tank.transform.scriptGenerator.ConverterUtil;
 import com.intuit.tank.util.ScriptFilterType;
+import com.intuit.tank.vm.api.enumerated.DataLocation;
 import com.intuit.tank.vm.api.enumerated.ScriptFilterActionType;
 import com.intuit.tank.vm.script.util.AddActionScope;
 import com.intuit.tank.vm.script.util.RemoveActionScope;
@@ -217,10 +218,26 @@ public class ScriptFilterUtil {
                 }
             }
         } else if (scriptFilterAction.getScope().equalsIgnoreCase(ReplaceActionScope.validation.getValue())) {
+
+            String key = ExractkeyLocationTypeUtil.getKey(scriptFilterAction.getKey());
+            String locationType = ExractkeyLocationTypeUtil.getLocationType(scriptFilterAction.getKey());
+
             for (RequestData pd : step.getResponseData()) {
-                if (pd.getKey().trim().equals(scriptFilterAction.getKey())) {
-                    pd.setValue(scriptFilterAction.getValue());
-                    pd.setType(RequestDataType.bodyValidation.name());
+                if (pd.getKey().trim().equals(key)) {
+                    if (!locationType.isEmpty()) {
+                        if ((locationType.equals(DataLocation.Header.name()))
+                                || (locationType.equals(DataLocation.Cookie.name()))
+                                || (locationType.equals(DataLocation.Body.name()))) {
+
+                            pd.setType(locationType.toLowerCase() + "Validation"); // Type is RequestDataType
+                            pd.setKey(key);
+                            pd.setValue(scriptFilterAction.getValue());
+                        }
+                    } else { // for Legacy support
+                        pd.setType(RequestDataType.bodyValidation.name());
+                        pd.setKey(scriptFilterAction.getKey());
+                        pd.setValue(scriptFilterAction.getValue());
+                    }
                     break;
                 }
             }
@@ -343,10 +360,27 @@ public class ScriptFilterUtil {
 
             step.getPostDatas().add(rd);
         } else if (scriptFilterAction.getScope().equalsIgnoreCase(AddActionScope.validation.getValue())) {
+            // Format: locationType:key
+
             RequestData rd = new RequestData();
-            rd.setType(RequestDataType.bodyValidation.name());
-            rd.setKey(scriptFilterAction.getKey());
-            rd.setValue(scriptFilterAction.getValue());
+            String key = ExractkeyLocationTypeUtil.getKey(scriptFilterAction.getKey());
+            String locationType = ExractkeyLocationTypeUtil.getLocationType(scriptFilterAction.getKey());
+
+            if (StringUtils.isNotBlank(locationType)) {
+                if ((locationType.equals(DataLocation.Header.name()))
+                        || (locationType.equals(DataLocation.Cookie.name()))
+                        || (locationType.equals(DataLocation.Body.name()))) {
+
+                    rd.setType(locationType.toLowerCase() + "Validation");
+                    rd.setKey(key);
+                    rd.setValue(scriptFilterAction.getValue());
+                }
+            } else { // Legacy support
+                rd.setType(RequestDataType.bodyValidation.name());
+                rd.setKey(scriptFilterAction.getKey());
+                rd.setValue(scriptFilterAction.getValue());
+            }
+
             if (step.getResponseData() == null) {
                 step.setResponseData(new HashSet<RequestData>());
             }
@@ -535,6 +569,7 @@ public class ScriptFilterUtil {
 
         if (action.getScope().equalsIgnoreCase("responseData")) {
             RequestData rd = new RequestData();
+
             rd.setType(RequestDataType.responseContent.name());
             rd.setKey(action.getKey());
             rd.setValue(action.getValue());

@@ -188,7 +188,7 @@ public class FunctionHandler {
         if (o instanceof Number) {
             ret = ((Number) o);
         } else {
-            ret = NumberUtils.createNumber(o.toString());
+            ret = NumberUtils.createNumber(o.toString().trim());
         }
         return ret;
     }

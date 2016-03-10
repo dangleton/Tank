@@ -1,40 +1,35 @@
 #!/bin/bash
-TEST_INSTALL_DIR=$1
-CURRENT_DIR=`pwd`
+INSTALL_DIR=$1
 if [ -z "$1" ]
   then
-    echo "No install dir supplied. Using `pwd`/../allInOne"
-    TEST_INSTALL_DIR=$CURRENT_DIR/../allInOne
+    echo "No install dir supplied. Using `pwd`"
+    INSTALL_DIR=`pwd`
 fi
-mkdir -p $TEST_INSTALL_DIR 2>/dev/null
-INSTALL_DIR=$(cd $TEST_INSTALL_DIR; pwd)
-cd $CURRENT_DIR
-
-
+mkdir -p $INSTALL_DIR 2>/dev/null
 echo "Installing all in one in $INSTALL_DIR"
-echo "building Tank release"
-mvn clean install -DskipTests -Prelease
-
-echo "extracting tomcat 6..."
-unzip -q -n -d $INSTALL_DIR all-in-one-files/apache-tomcat-6.0.41.zip 2>/dev/null
-
+echo "downloading and extracting tomcat 6..."
+wget -O /tmp/apache-tomcat.tgz http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.41/bin/apache-tomcat-6.0.41.tar.gz 2>/dev/null
+tar -zxf /tmp/apache-tomcat.tgz -C $INSTALL_DIR 2>/dev/null
+rm -f /tmp/apache-tomcat.tgz 2>/dev/null
 ln -snf $INSTALL_DIR/apache-tomcat-6.0.41 $INSTALL_DIR/tomcat6 2>/dev/null
-chmod 755 $INSTALL_DIR/tomcat6/bin/*.sh
 mkdir $INSTALL_DIR/tomcat6/db 2>/dev/null
 mkdir $INSTALL_DIR/tomcat6/jars 2>/dev/null
 
-echo "extracting agent-standalone..."
-unzip -q -n -d $INSTALL_DIR agent/agent_standalone_pkg/target/agent-standalone-pkg.zip 2>/dev/null
+echo "downloading and extracting agent-standalone..."
+wget -O /tmp/agent-standalone-pkg.zip http://tank-public.s3-website-us-east-1.amazonaws.com/agent-standalone-pkg.zip 2>/dev/null
+unzip -q -d $INSTALL_DIR /tmp/agent-standalone-pkg 2>/dev/null
+rm -f /tmp/agent-standalone-pkg 2>/dev/null
 
-echo "copying support libraries and config..."
-cp -n all-in-one-files/*.jar $INSTALL_DIR/tomcat6/lib/
-cp -n all-in-one-files/server-all-in-one.xml $INSTALL_DIR/tomcat6/conf/server.xml
-cp -n all-in-one-files/settings-all-in-one.xml $INSTALL_DIR/tomcat6/settings.xml
-cp -n all-in-one-files/context.xml $INSTALL_DIR/tomcat6/conf/context.xml
+echo "downloading and extracting support libraries..."
+wget -O $INSTALL_DIR/tomcat6/lib/weld-tomcat-support-1.0.1-Final.jar http://central.maven.org/maven2/org/jboss/weld/servlet/weld-tomcat-support/1.0.1-Final/weld-tomcat-support-1.0.1-Final.jar 2>/dev/null
+wget -O /$INSTALL_DIR/tomcat6/lib/h2-1.4.187.jar http://repo2.maven.org/maven2/com/h2database/h2/1.4.187/h2-1.4.187.jar 2>/dev/null
+wget -O /$INSTALL_DIR/tomcat6/conf/server.xml http://tank-public.s3-website-us-east-1.amazonaws.com/server-all-in-one.xml 2>/dev/null
+wget -O /$INSTALL_DIR/tomcat6/settings.xml http://tank-public.s3-website-us-east-1.amazonaws.com/settings-all-in-one.xml 2>/dev/null
+wget -O $INSTALL_DIR/tomcat6/conf/context.xml http://tank-public.s3-website-us-east-1.amazonaws.com/context.xml 2>/dev/null
 
-echo "installing tank war file..."
+echo "downloading and installing tank war file..."
 rm -fr $INSTALL_DIR/tomcat6/webapps/docs $INSTALL_DIR/tomcat6/webapps/examples $INSTALL_DIR/tomcat6/webapps/ROOT 2>/dev/null
-cp web/web_ui/target/tank.war $INSTALL_DIR/tomcat6/webapps/ROOT.war
+wget -O $INSTALL_DIR/tomcat6/webapps/ROOT.war http://tank-public.s3-website-us-east-1.amazonaws.com/tank.war 2>/dev/null
 
 echo "Creating start script at $INSTALL_DIR/start.sh ..."
 echo "#!/bin/bash">$INSTALL_DIR/start.sh
@@ -68,5 +63,5 @@ echo "nohup java -jar agent-standalone-all.jar -controller=\$controller -host=\$
 
 
 
-echo "Finished installing all in one in $INSTALL_DIR"
+echo "Installing all in one in $INSTALL_DIR"
 echo "Run $INSTALL_DIR/start.sh to start the all in one server and $INSTALL_DIR/stop.sh to kill it"
