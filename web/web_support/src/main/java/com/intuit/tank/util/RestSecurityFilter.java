@@ -33,6 +33,7 @@ import org.jboss.seam.security.Identity;
 import com.intuit.tank.auth.TankUser;
 import com.intuit.tank.dao.UserDao;
 import com.intuit.tank.project.User;
+import com.intuit.tank.vm.common.TankConstants;
 import com.intuit.tank.vm.settings.TankConfig;
 
 public class RestSecurityFilter implements Filter {
@@ -59,6 +60,8 @@ public class RestSecurityFilter implements Filter {
                 HttpServletResponse resp = (HttpServletResponse) response;
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 return; // break filter chain, requested JSP/servlet will not be executed
+            } else {
+                ((HttpServletRequest)request).getSession().setAttribute(TankConstants.REST_USER, user);
             }
         }
         chain.doFilter(request, response);
@@ -96,6 +99,7 @@ public class RestSecurityFilter implements Filter {
                 LOG.error("Error getting user: " + e, e);
             }
         }
+        
         return user;
     }
 

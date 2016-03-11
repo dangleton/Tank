@@ -30,19 +30,10 @@ import com.intuit.tank.dao.JobNotificationDao;
 import com.intuit.tank.dao.JobRegionDao;
 import com.intuit.tank.harness.StopBehavior;
 import com.intuit.tank.logging.LoggingProfile;
-import com.intuit.tank.project.DataFile;
-import com.intuit.tank.project.EntityVersion;
-import com.intuit.tank.project.JobInstance;
-import com.intuit.tank.project.JobNotification;
-import com.intuit.tank.project.JobRegion;
-import com.intuit.tank.project.ScriptGroup;
-import com.intuit.tank.project.ScriptGroupStep;
-import com.intuit.tank.project.TestPlan;
-import com.intuit.tank.project.Workload;
 import com.intuit.tank.util.TestParamUtil;
 import com.intuit.tank.vm.api.enumerated.TerminationPolicy;
-import com.intuit.tank.vm.settings.TimeUtil;
 import com.intuit.tank.vm.settings.TankConfig;
+import com.intuit.tank.vm.settings.TimeUtil;
 import com.intuit.tank.vm.settings.VmInstanceType;
 
 public class JobDetailFormatter {
@@ -51,15 +42,20 @@ public class JobDetailFormatter {
     private static final long HOURS = 1000 * 60 * 60;
 
     public static String createJobDetails(JobValidator validator, Workload workload, JobInstance proposedJobInstance) {
-        return buildDetails(validator, workload, proposedJobInstance, null);
+        return buildDetails(validator, workload, proposedJobInstance, null, null);
+    }
+
+    public static String createJobDetails(JobValidator validator, Workload workload, JobInstance proposedJobInstance,
+            Set<com.intuit.tank.project.Group> groups) {
+        return buildDetails(validator, workload, proposedJobInstance, null, groups);
     }
 
     public static String createJobDetails(JobValidator validator, String scriptName) {
-        return buildDetails(validator, null, null, scriptName);
+        return buildDetails(validator, null, null, scriptName, null);
     }
 
     protected static String buildDetails(JobValidator validator, Workload workload, JobInstance proposedJobInstance,
-            String scriptName) {
+            String scriptName, Set<com.intuit.tank.project.Group> groups) {
         StringBuilder sb = new StringBuilder();
         StringBuilder errorSB = new StringBuilder();
         TankConfig config = new TankConfig();
@@ -83,14 +79,22 @@ public class JobDetailFormatter {
                 }
             }
             Collections.sort(regions);
+            if (groups != null) {
+                int numMachines = getNumMachines(proposedJobInstance, regions);
+                if (!JobValidator.canLaunchInstances(numMachines, groups)) {
+                    addError(errorSB, "You are not authorized to launch " + numMachines
+                            + " agents. Please contact a Tank administrator to get authorization.");
+                }
+            }
             long simulationTime = getSimulationTime(proposedJobInstance, workload, validator);
             addProperty(sb, "General Information", "",
                     "emphasis");
             addProperty(sb, "Name", StringUtils.isBlank(proposedJobInstance.getName()) ? "Name cannot be null"
                     : proposedJobInstance.getName(), StringUtils.isBlank(proposedJobInstance.getName()) ? "error"
-                    : null);
+                            : null);
             addProperty(sb, "Workload Type", proposedJobInstance.getIncrementStrategy().name());
-            addProperty(sb, "Tank Http Client", config.getAgentConfig().getTankClientName(proposedJobInstance.getTankClientClass()));
+            addProperty(sb, "Tank Http Client",
+                    config.getAgentConfig().getTankClientName(proposedJobInstance.getTankClientClass()));
             addProperty(sb, "Agent VM Type", getVmDetails(config, proposedJobInstance.getVmInstanceType()));
             addProperty(sb, "Assign Elastic Ips", Boolean.toString(proposedJobInstance.isUseEips()));
             addProperty(sb, "Max Users per Agent", Integer.toString(proposedJobInstance.getNumUsersPerAgent()));
@@ -159,7 +163,8 @@ public class JobDetailFormatter {
             // variables
             addProperty(sb, "Global Variables", proposedJobInstance.getVariables().size() == 0 ? "None"
                     : " (Allow Overide: "
-                            + proposedJobInstance.isAllowOverride() + ")", "emphasis");
+                            + proposedJobInstance.isAllowOverride() + ")",
+                    "emphasis");
             for (Entry<String, String> entry : proposedJobInstance.getVariables().entrySet()) {
                 addProperty(sb, "  " + entry.getKey(), entry.getValue());
                 if (entry.getValue().toLowerCase().endsWith(".csv") && !datafiles.contains(entry.getValue())) {
@@ -178,7 +183,8 @@ public class JobDetailFormatter {
                 JobNotification not = jnd.findById(ver.getObjectId());
                 if (not != null) {
                     if (not.getLifecycleEvents().size() > 0) {
-                        addProperty(sb, "  " + not.getRecipientList(), StringUtils.join(not.getLifecycleEvents(), ", "));
+                        addProperty(sb, "  " + not.getRecipientList(),
+                                StringUtils.join(not.getLifecycleEvents(), ", "));
                     } else {
                         addProperty(sb, "  " + not.getRecipientList(), "no events selected", "error");
                     }
@@ -268,7 +274,8 @@ public class JobDetailFormatter {
         return sb.toString();
     }
 
-    protected static long getSimulationTime(JobInstance proposedJobInstance, Workload workload, JobValidator validator) {
+    protected static long getSimulationTime(JobInstance proposedJobInstance, Workload workload,
+            JobValidator validator) {
         long ret = proposedJobInstance.getSimulationTime();
         if (TerminationPolicy.script == proposedJobInstance.getTerminationPolicy()) {
             ret = 0;
@@ -291,6 +298,14 @@ public class JobDetailFormatter {
             }
         }
         long time = simulationTime + proposedJobInstance.getRampTime();
+        int numMachines = getNumMachines(proposedJobInstance, regions);
+        // dynamoDB costs about 1.5 times the instance cost
+        BigDecimal cost = estimateCost(numMachines, costPerHour, time);
+        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
+        return nf.format(cost.doubleValue());
+    }
+
+    private static int getNumMachines(JobInstance proposedJobInstance, List<JobRegion> regions) {
         int numMachines = 0;
         for (JobRegion region : regions) {
             int users = Integer.parseInt(region.getUsers());
@@ -298,10 +313,7 @@ public class JobDetailFormatter {
                 numMachines += (int) Math.ceil((double) users / (double) proposedJobInstance.getNumUsersPerAgent());
             }
         }
-        // dynamoDB costs about 1.5 times the instance cost
-        BigDecimal cost = estimateCost(numMachines, costPerHour, time);
-        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
-        return nf.format(cost.doubleValue());
+        return numMachines;
     }
 
     protected static BigDecimal estimateCost(int numInstances, BigDecimal costPerHour, long time) {
