@@ -26,6 +26,8 @@ public class TankConstants {
     public static final String TANK_BUILD_VERSION = "6.0.0";
     public static final String TOTAL_TIME_KEY = "_totalTime";
     public static final String START_TIME_KEY = "_startTime";
+    
+    public static final String AGENT_LIMIT_PREFIX = "agent-launch-users_";
 
     public static final String KEY_IPS = "public_ips";
     public static final String KEY_JOB_ID = "jobId";
@@ -109,5 +111,6 @@ public class TankConstants {
     public static final String EXPRESSION_REGEX = "[\\#]\\{([^\\}]*)\\}";
     public static final String CSV_EXPRESSION_REGEX = "[\\#\\$]\\{ioFunctions.getCSVData\\(([^\\)]*)\\).*";
     public static final String DEFAULT_CSV_FILE_NAME = "csv-data.txt";
+    public static final String REST_USER = "REST_USER";
 
 }

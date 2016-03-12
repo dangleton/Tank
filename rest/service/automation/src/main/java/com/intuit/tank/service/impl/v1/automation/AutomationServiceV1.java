@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -63,6 +64,7 @@ import com.intuit.tank.perfManager.workLoads.util.WorkloadScriptUtil;
 import com.intuit.tank.project.BaseEntity;
 import com.intuit.tank.project.DataFile;
 import com.intuit.tank.project.EntityVersion;
+import com.intuit.tank.project.Group;
 import com.intuit.tank.project.JobConfiguration;
 import com.intuit.tank.project.JobDetailFormatter;
 import com.intuit.tank.project.JobInstance;
@@ -77,6 +79,7 @@ import com.intuit.tank.project.ScriptGroup;
 import com.intuit.tank.project.ScriptGroupStep;
 import com.intuit.tank.project.ScriptStep;
 import com.intuit.tank.project.TestPlan;
+import com.intuit.tank.project.User;
 import com.intuit.tank.project.Workload;
 import com.intuit.tank.script.processor.ScriptProcessor;
 import com.intuit.tank.service.impl.v1.cloud.JobController;
@@ -107,6 +110,9 @@ public class AutomationServiceV1 implements AutomationService {
 
     @Context
     private ServletContext servletContext;
+    
+    @Context
+    private HttpSession httpSession;
 
     /**
      * @{inheritDoc
@@ -327,8 +333,13 @@ public class AutomationServiceV1 implements AutomationService {
             plan.addScriptGroup(scriptGroup);
         }
         workload = new WorkloadDao().saveOrUpdate(workload);
+        User user = (User)httpSession.getAttribute(TankConstants.REST_USER);
+        Set<Group> groups = null;
+        if (user != null) {
+            groups  = user.getGroups();
+        }
         String jobDetails = JobDetailFormatter.createJobDetails(
-                new JobValidator(workload.getTestPlans(), jobInstance.getVariables(), false), workload, jobInstance);
+                new JobValidator(workload.getTestPlans(), jobInstance.getVariables(), false), workload, jobInstance, groups);
         jobInstance.setJobDetails(jobDetails);
         jobInstance = jobInstanceDao.saveOrUpdate(jobInstance);
         jobQueueDao.saveOrUpdate(queue);

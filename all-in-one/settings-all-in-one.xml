@@ -1,85 +1,64 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<tank-settings>
-
-  <!-- The server side storage directory for datafiles. 
-  Can be an absolute or relative path or an s3 bucket by prefixing a bucket with s3: e.g. s3:tank-data-files -->
-  <data-file-storage>datafiles</data-file-storage>
-  
-  <!-- The server side storage directory for timing data.
-  Can be an absolute or relative path or an s3 bucket by prefixing a bucket with s3: e.g. s3:tank-timing-files -->
-  <timing-file-storage>timing</timing-file-storage>
-
-  <!-- The server side storage directory for agent files to be sent to agents. All files in this directory will be sent to each agent.
-  to override the default agent startup behavior, include a start_wats.sh script with modifications.
-  Can be an absolute or relative path or an s3 bucket by prefixing a bucket with s3: e.g. s3:tank-agent-supports -->
-  <jar-file-storage>jars</jar-file-storage>
-
-  <!-- The server side storage directory for temp script files. must be local file system. -->
-  <tmp-file-storage>tmpfiles</tmp-file-storage>
-
-  <!-- name of this instance (no spaces). used in timing table names. -->
-  <instance-name>tank</instance-name>
-
-  <!-- The baseUrl for the controller. Must include the context (tank) -->
-  <controller-base-url>http://localhost:8080/tank</controller-base-url>
-
-  <!-- if this instance is a standalone instance and should not start agents 
+<?xml version="1.0" encoding="UTF-8"?><!-- #%L Intuit Tank Api %% Copyright (C) 2011 - 2015 Intuit Inc. %% All 
+  rights reserved. This program and the accompanying materials are made available 
+  under the terms of the Eclipse Public License v1.0 which accompanies this 
+  distribution, and is available at http://www.eclipse.org/legal/epl-v10.html 
+  #L% --><tank-settings>
+<!-- The server side storage directory for datafiles -->
+<data-file-storage>datafiles</data-file-storage>
+<!-- The server side storage directory for timing data -->
+<timing-file-storage>timing</timing-file-storage>
+<!-- The server side storage directory for temp script files -->
+<tmp-file-storage>tmpfiles</tmp-file-storage>
+<!-- The server side storage directory for agent files to be sent to agents -->
+<jar-file-storage>jars</jar-file-storage>
+<!-- name of this instance (no spaces). used in timing table names. -->
+<instance-name>tank-demo-all-in-one</instance-name>
+<!-- The baseUrl for the controller. Must include the context (tank) -->
+<controller-base-url>http://localhost:8080</controller-base-url>
+<!-- if this instance is a standalone instance and should not start agents 
     automatically. -->
-  <standalone>false</standalone>
-  
-  <!--  set to true to encrypt data at rest in s3 buckets -->
-  <s3-encrypt>false</s3-encrypt>
-
-  <!-- if this rest calls require authentication using api key or username/password 
+<standalone>true</standalone>
+<!-- if this rest calls require authentication using api key or username/password 
     or logged in via session -->
-  <rest-security-enabled>true</rest-security-enabled>
-
-  <!-- Products that can be selected by users for categorization -->
-  <products>
+<rest-security-enabled>false</rest-security-enabled>
+<!-- Products that can be selected by users for categorization -->
+<products>
     <product name="">All Products</product>
     <product name="MyProduct">My Product</product>
   </products>
-
-  <!-- Locations used for informational purposes only. -->
-  <locations>
-    <location name="unspecified" displayName="Unspecified" />
-    <location name="san_diego" displayName="San Diego\, CA" />
+<!-- Locations used for informational purposes only. -->
+<locations>
+    <location displayName="Unspecified" name="unspecified"/>
+    <location displayName="San Diego\, CA" name="san_diego"/>
   </locations>
-
-  <!-- mail configuration for notifications -->
-  <mail>
+<!-- mail configuration for notifications -->
+<mail>
     <mail.smtp.host>localhost</mail.smtp.host>
     <mail.smtp.port>25</mail.smtp.port>
-    <mail-from>do_not_reply@mydomain.com</mail-from>
-    <mail.smtp.tls>false</mail.smtp.tls>
-    <mail.smtp.user></mail.smtp.user>
-    <mail.smtp.password></mail.smtp.password>
+    <from-email>do_not_reply@mydomain.com</from-email>
   </mail>
-  
-  <reporting>
-    <provider>
+<reporting>
     <!-- Reporter that uses key value database. currently DynamoDB -->
+    <!--<provider>
       <reporter>com.intuit.tank.reporting.db.DatabaseResultsReporter</reporter>
       <reader>com.intuit.tank.reporting.db.DatabaseResultsReader</reader>
-      <config></config>
+      <config/>
       
     </provider>
-      
+     --> 
     <!-- Use this for Rest reporting directly to the controller. 
       Only for standalone or all in one. will over tax the controller if used for large load -->
-    <!-- <provider>
+    <provider>
       <reporter>com.intuit.tank.reporting.rest.RestResultsReporter</reporter>
       <reader>com.intuit.tank.reporting.rest.RestResultsReader</reader>
-    </provider> -->
+    </provider> 
   </reporting>
-
-  <agent-config>
+<agent-config>
     <!-- Times used when calculating estimated run time -->
     <duration-simulation>
-      <simulation for="post" min="500" max="1000" />
-      <simulation for="get" min="50" max="300" />
-      <simulation for="process" min="10" max="50" />
+      <simulation for="post" max="1000" min="500"/>
+      <simulation for="get" max="300" min="50"/>
+      <simulation for="process" max="50" min="10"/>
     </duration-simulation>
 
     <!-- Where to store csv files on the agent -->
@@ -134,18 +113,9 @@
       <header key="test_flag">test_flag</header>
     </request-headers>
 
-    <!-- configured TankHttpClients. -->
-    <tank-http-clients>
-      <tank-client name="Apache HttpClient 3.1">com.intuit.tank.httpclient3.TankHttpClient3</tank-client>
-      <tank-client name="Apache HttpClient 4.5">com.intuit.tank.httpclient4.TankHttpClient4</tank-client>
-      <tank-client name="OkHttp Client 2.5">com.intuit.tank.okhttpclient.TankOkHttpClient</tank-client>
-    </tank-http-clients>
-    <default-tank-client>Apache HttpClient 4.5</default-tank-client>
 
   </agent-config>
-
-
-  <vm-manager>
+<vm-manager>
     <default-region>US_EAST</default-region>
     <!-- <default-region>US_WEST_1</default-region> -->
     <!-- set to true to default use of available eips for agents -->
@@ -154,20 +124,12 @@
     <reserved-elastic-ips>
       <!-- <eip>0.0.0.0</eip> -->
     </reserved-elastic-ips>
-    <!--  the number of instances user will be allowed to launch without explicit permisison. -->
-    <default-num-allowed-instances>2</default-num-allowed-instances>
 
     <!-- Default instance description items. can be overridden in instance 
       descriptions. -->
     <default-instance-description>
       <security-group>security_group</security-group>
       <keypair>myKey</keypair>
-        <!--  if using roles. recommended over using security keys -->
-        <!-- <iam-role>role</iam-role> -->
-        <!--  optional if running ni a subnet in a vpc, use the subnetIds -->
-        <!-- <vpc-subnet>subnet-472b9f30</vpc-subnet>
-        <security-group-ids>sg-9f9936fb</security-group-ids> -->
-      
       <reuse-instances>false</reuse-instances>
     </default-instance-description>
 
@@ -181,22 +143,12 @@
       <!-- Set if you need a proxy to talk to amazon services -->
       <!-- <proxy-host></proxy-host> <proxy-port>80</proxy-port> -->
     </credentials>
-    
-    <!-- Include any tags to add to agent instances. note that a maximum of 10 tags is allowed and tank uses 3 tags. -->
-    <tags>
-        <tag name="admin_contact">tank_admin</tag>
-    </tags>
 
     <!-- Instance descriptions for regions -->
     <instance-descriptions region="US_WEST_1">
       <instance-descripion name="AGENT">
         <ami>[AMI-ID]</ami>
         <keypair>[KEYPAIR]</keypair>
-                <!--  if using roles. recommended over using security keys -->
-        <!-- <iam-role>role</iam-role> -->
-        <!--  optional if running ni a subnet in a vpc, use the subnetIds -->
-        <!-- <vpc-subnet>subnet-472b9f30</vpc-subnet>
-        <security-group-ids>sg-9f9936fb</security-group-ids> -->
       </instance-descripion>
     </instance-descriptions>
 
@@ -204,26 +156,16 @@
       <instance-descripion name="AGENT">
         <ami>[AMI-ID]</ami>
         <keypair>[KEYPAIR]</keypair>
-        <!--  if using roles. recommended over using security keys -->
-        <!-- <iam-role>role</iam-role> -->
-        <!--  optional if running ni a subnet in a vpc, use the subnetIds -->
-        <!-- <vpc-subnet>subnet-472b9f30</vpc-subnet>
-        <security-group-ids>sg-9f9936fb</security-group-ids> -->
       </instance-descripion>
     </instance-descriptions>
 
     <!-- used to set agent instnces and calculate costs. -->
     <instance-types type="amazon">
-      <type name="c3.large" cost=".105" users="500" cpus="2" ecus="7"
-        mem="3.75" jvmArgs="-Xms2560m -Xmx2560m" />
-      <type name="c3.xlarge" cost=".21" users="2000" cpus="4" ecus="14"
-        mem="7.5" jvmArgs="-Xms6g -Xmx6g" />
-      <type name="c3.2xlarge" cost=".42" users="4000" cpus="8"
-        ecus="28" mem="15" default="true" jvmArgs="-Xms12g -Xmx12g" />
-      <type name="c3.4xlarge" cost=".84" users="8000" cpus="16"
-        ecus="55" mem="30" jvmArgs="-Xms125g -Xmx25g" />
-      <type name="c3.8xlarge" cost="1.68" users="16000" cpus="32"
-        ecus="108" mem="60" jvmArgs="-Xms50g -Xmx50g" />
+      <type cost=".105" cpus="2" ecus="7" jvmArgs="-Xms2560m -Xmx2560m" mem="3.75" name="c3.large" users="500"/>
+      <type cost=".21" cpus="4" ecus="14" jvmArgs="-Xms6g -Xmx6g" mem="7.5" name="c3.xlarge" users="2000"/>
+      <type cost=".42" cpus="8" default="true" ecus="28" jvmArgs="-Xms12g -Xmx12g" mem="15" name="c3.2xlarge" users="4000"/>
+      <type cost=".84" cpus="16" ecus="55" jvmArgs="-Xms125g -Xmx25g" mem="30" name="c3.4xlarge" users="8000"/>
+      <type cost="1.68" cpus="32" ecus="108" jvmArgs="-Xms50g -Xmx50g" mem="60" name="c3.8xlarge" users="16000"/>
     </instance-types>
 
 
@@ -241,18 +183,16 @@
       <sleep-time-between-check>30s</sleep-time-between-check>
     </watchdog>
 
-    <!--Configure the results database implementation if reporting is configured via com.intuit.tank.reporting.db.DatabaseResultsReporter -->
-      <results>
+    <results>
+      <provider>com.intuit.tank.persistence.databases.AmazonDynamoDatabaseDocApi</provider>
       <config>
         <write-capacity>50</write-capacity>
         <read-capacity>10</read-capacity>
       </config>
-      <provider>com.intuit.tank.persistence.databases.AmazonDynamoDatabaseDocApi</provider>
-      <!-- <provider>com.intuit.tank.persistence.databases.AmazonSimpleDatabase</provider> -->
     </results>
-  </vm-manager>
 
-  <security>
+  </vm-manager>
+<security>
     <!-- groups that can be assigned to users. set isDefault to tru to have 
       these selected when creating new users -->
     <groups>
@@ -261,13 +201,6 @@
       <group>script-manager</group>
       <group>project-manager</group>
       <group>job-manager</group>
-      <group>agent-launch-users_4</group>
-      <group>agent-launch-users_6</group>
-      <group>agent-launch-users_8</group>
-      <group>agent-launch-users_10</group>
-      <group>agent-launch-users_15</group>
-      <group>agent-launch-users_100</group>
-      <group>agent-launch-users_unlimited</group>
       <group isDefault="true">guest</group>
     </groups>
     <!-- restrictions set which groups can perform which actions. -->
@@ -355,16 +288,10 @@
       </user>
     </users>
   </security>
-
-  <!-- These are the scripts that get prepended to every extended script 
+<!-- These are the scripts that get prepended to every extended script 
     filter. -->
-  <logic-step>
+<logic-step>
     <insert-before><![CDATA[
-// ######## Compatability mode for java 8. ##########
-try {
-   load("nashorn:mozilla_compat.js");
-} catch (exception){}
-
 // ######## Logging functions ##########
 
 /**
@@ -562,5 +489,4 @@ function setAction(action) {
     ]]>
     </append-after>
   </logic-step>
-
 </tank-settings>
