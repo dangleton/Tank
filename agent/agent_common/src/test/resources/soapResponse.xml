@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <ns2:loginUserResponse xmlns:ns2="http://services.auth.novatus.com/">
+      <return>
+        <responseSuccess>true</responseSuccess>
+        <sessionUUID>1005f480-e1ea-4616-8073-6276abad010d</sessionUUID>
+      </return>
+    </ns2:loginUserResponse>
+  </soap:Body>
+</soap:Envelope>

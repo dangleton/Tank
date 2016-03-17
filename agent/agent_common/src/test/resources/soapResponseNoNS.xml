@@ -1,0 +1,10 @@
+<Envelope>
+  <Body>
+    <loginUserResponse>
+      <return>
+        <responseSuccess>true</responseSuccess>
+        <sessionUUID>1005f480-e1ea-4616-8073-6276abad010d</sessionUUID>
+      </return>
+    </loginUserResponse>
+  </Body>
+</Envelope>
