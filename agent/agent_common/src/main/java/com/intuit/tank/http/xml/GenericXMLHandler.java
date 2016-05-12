@@ -14,6 +14,7 @@ package com.intuit.tank.http.xml;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,8 +22,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -32,6 +35,9 @@ import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
+import org.xml.sax.SAXException;
+
+import com.amazonaws.util.StringInputStream;
 
 /**
  * Generic class to provide xml file reading and writing capabilities
@@ -71,6 +77,7 @@ public class GenericXMLHandler implements Cloneable {
             builder.setValidation(false);
             this.xmlDocument = builder.build(this.xmlFile);
             this.namespaces = new HashMap<String, String>();
+            initDdoc(FileUtils.readFileToString(xmlFile));
         } catch (Exception ex) {
             this.xmlDocument = null;
             logger.error("Error initializing handler: " + ex.getMessage(), ex);
@@ -96,13 +103,18 @@ public class GenericXMLHandler implements Cloneable {
                 xmlFile = xmlFile.substring(xmlFile.indexOf("<"));
                 this.xmlDocument = builder.build(new StringReader(xmlFile));
                 this.namespaces = new HashMap<String, String>();
-                this.dDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                        .parse(xml);
+                initDdoc(xmlFile);
             } catch (Exception ex) {
                 this.xmlDocument = null;
                 logger.error("Error parsing xml File: " + xmlFile + ": " + ex.getMessage());
             }
         }
+    }
+
+    private void initDdoc(String xmlString) throws IOException, SAXException, ParserConfigurationException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        dDoc = factory.newDocumentBuilder().parse(new StringInputStream(xmlString));
     }
 
     /**
@@ -153,8 +165,7 @@ public class GenericXMLHandler implements Cloneable {
             if (currentPath.equals(xPathExpression)) {
                 org.jdom.Element node = (org.jdom.Element) XPath.selectSingleNode(this.xmlDocument, xPathExpression);
                 return node;
-            }
-            else {
+            } else {
                 return SetElementText(xPathExpression, currentNode + 1);
             }
         } else {
@@ -185,8 +196,7 @@ public class GenericXMLHandler implements Cloneable {
 
             if (currentPath.equals(xPathExpression)) {
                 return element;
-            }
-            else {
+            } else {
                 return SetElementText(xPathExpression, currentNode + 1);
             }
 
@@ -260,8 +270,7 @@ public class GenericXMLHandler implements Cloneable {
      *            The xPath expression
      * @return TRUE if the xPath expression exists; false otherwise
      */
-    public boolean xPathExists(String xpathExpr)
-    {
+    public boolean xPathExists(String xpathExpr) {
         try {
             if (XPath.selectSingleNode(this.xmlDocument, xpathExpr) == null)
                 return false;

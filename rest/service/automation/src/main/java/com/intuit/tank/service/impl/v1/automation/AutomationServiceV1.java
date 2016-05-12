@@ -110,9 +110,6 @@ public class AutomationServiceV1 implements AutomationService {
 
     @Context
     private ServletContext servletContext;
-    
-    @Context
-    private HttpSession httpSession;
 
     /**
      * @{inheritDoc
@@ -333,11 +330,10 @@ public class AutomationServiceV1 implements AutomationService {
             plan.addScriptGroup(scriptGroup);
         }
         workload = new WorkloadDao().saveOrUpdate(workload);
-        User user = (User)httpSession.getAttribute(TankConstants.REST_USER);
         Set<Group> groups = null;
-        if (user != null) {
-            groups  = user.getGroups();
-        }
+//        if (user != null) {
+//            groups  = user.getGroups();
+//        }
         String jobDetails = JobDetailFormatter.createJobDetails(
                 new JobValidator(workload.getTestPlans(), jobInstance.getVariables(), false), workload, jobInstance, groups);
         jobInstance.setJobDetails(jobDetails);

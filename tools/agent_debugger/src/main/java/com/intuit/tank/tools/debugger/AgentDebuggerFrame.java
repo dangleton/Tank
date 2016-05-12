@@ -235,7 +235,8 @@ public class AgentDebuggerFrame extends JFrame {
                         multiSelectEnd = end;
                         try {
                             scriptEditorTA.setEnabled(true);
-                            scriptEditorTA.select(scriptEditorTA.getLineStartOffset(start), scriptEditorTA.getLineEndOffset(end));
+                            scriptEditorTA.select(scriptEditorTA.getLineStartOffset(start),
+                                    scriptEditorTA.getLineEndOffset(end));
                             scriptEditorTA.setEnabled(false);
                         } catch (BadLocationException e1) {
                             e1.printStackTrace();
@@ -250,7 +251,8 @@ public class AgentDebuggerFrame extends JFrame {
             }
 
             private int getHash(MouseEvent e) {
-                return new HashCodeBuilder().append(e.getButton()).append(e.getSource().hashCode()).append(e.getPoint()).toHashCode();
+                return new HashCodeBuilder().append(e.getButton()).append(e.getSource().hashCode()).append(e.getPoint())
+                        .toHashCode();
             }
 
         });
@@ -461,7 +463,8 @@ public class AgentDebuggerFrame extends JFrame {
         boolean ret = false;
         try {
             TestStep unmarshalledStep = JaxbUtil.unmarshall(stepXML, TestStep.class);
-            scriptEditorScrollPane.getGutter().addOffsetTrackingIcon(scriptEditorTA.getLineStartOffset(unmarshalledStep.getStepIndex()), modifiedIcon);
+            scriptEditorScrollPane.getGutter().addOffsetTrackingIcon(
+                    scriptEditorTA.getLineStartOffset(unmarshalledStep.getStepIndex()), modifiedIcon);
 
             DebugStep debugStep = steps.get(unmarshalledStep.getStepIndex());
             debugStep.setStepRun(unmarshalledStep);
@@ -496,7 +499,8 @@ public class AgentDebuggerFrame extends JFrame {
         if (testStep instanceof RequestStep) {
             StringBuilder label = new StringBuilder();
             RequestStep step = (RequestStep) testStep;
-            label.append(step.getRequest().getProtocol()).append("://").append(step.getRequest().getHost()).append(step.getRequest().getPath());
+            label.append(step.getRequest().getProtocol()).append("://").append(step.getRequest().getHost())
+                    .append(step.getRequest().getPath());
 
             int qsCount = 0;
             if (step.getRequest().getQueryString() != null) {
@@ -542,7 +546,8 @@ public class AgentDebuggerFrame extends JFrame {
         setCurrentTestPlan(null);
         this.currentWorkload = currentWorkload;
         if (currentWorkload != null) {
-            DefaultComboBoxModel model = new DefaultComboBoxModel(currentWorkload.getPlans().toArray(new HDTestPlan[currentWorkload.getPlans().size()]));
+            DefaultComboBoxModel model = new DefaultComboBoxModel(
+                    currentWorkload.getPlans().toArray(new HDTestPlan[currentWorkload.getPlans().size()]));
             if (currentWorkload.getPlans().size() > 0) {
                 setCurrentTestPlan(currentWorkload.getPlans().get(0));
                 model.setSelectedItem(currentTestPlan);
@@ -636,7 +641,8 @@ public class AgentDebuggerFrame extends JFrame {
         scriptEditorTA.setText(sb.toString());
         for (IconContainer ic : icons) {
             try {
-                scriptEditorScrollPane.getGutter().addOffsetTrackingIcon(scriptEditorTA.getLineStartOffset(ic.getLine()), ic.getIcon());
+                scriptEditorScrollPane.getGutter()
+                        .addOffsetTrackingIcon(scriptEditorTA.getLineStartOffset(ic.getLine()), ic.getIcon());
             } catch (BadLocationException e) {
                 e.printStackTrace();
             }
@@ -654,13 +660,15 @@ public class AgentDebuggerFrame extends JFrame {
         HDWorkload workload = new HDWorkload();
         workload.setName(currentWorkload.getName());
         workload.setDescription(currentWorkload.getDescription());
-        if (currentWorkload.getVariables() != null) {
-            HDTestVariables variables = new HDTestVariables(currentWorkload.getVariables().isAllowOverride());
-            for (Entry<String, String> entry : this.projectVariables.entrySet()) {
-                variables.addVariable(entry.getKey(), entry.getValue());
-            }
-            workload.setVariables(variables);
+
+        if (currentWorkload.getVariables() == null) {
+            currentWorkload.setVariables(new HDTestVariables(false));
         }
+        HDTestVariables variables = currentWorkload.getVariables();
+        for (Entry<String, String> entry : this.projectVariables.entrySet()) {
+            variables.addVariable(entry.getKey(), entry.getValue());
+        }
+        workload.setVariables(variables);
         workload.getPlans().add(currentTestPlan);
         return JaxbUtil.marshall(workload);
     }
@@ -906,12 +914,14 @@ public class AgentDebuggerFrame extends JFrame {
                         debugStep.setResponse(context.getResponse());
                     }
                     try {
-                        if (context.getResponse() != null && (context.getResponse().getHttpCode() >= 400 || context.getResponse().getHttpCode() == -1)) {
+                        if (context.getResponse() != null && (context.getResponse().getHttpCode() >= 400
+                                || context.getResponse().getHttpCode() == -1)) {
                             // highlight the line
                             int lineStartOffset = scriptEditorTA.getLineStartOffset(currentRunningStep);
                             int lineEndOffset = scriptEditorTA.getLineEndOffset(currentRunningStep);
 
-                            scriptEditorTA.getHighlighter().addHighlight(lineStartOffset, lineEndOffset, new SquiggleUnderlineHighlightPainter(Color.RED));
+                            scriptEditorTA.getHighlighter().addHighlight(lineStartOffset, lineEndOffset,
+                                    new SquiggleUnderlineHighlightPainter(Color.RED));
                         }
                     } catch (BadLocationException e1) {
                         e1.printStackTrace();
@@ -919,7 +929,8 @@ public class AgentDebuggerFrame extends JFrame {
                     if (!context.getErrors().isEmpty()) {
                         try {
                             debugStep.setErrors(context.getErrors());
-                            scriptEditorScrollPane.getGutter().addOffsetTrackingIcon(scriptEditorTA.getLineStartOffset(currentRunningStep), errorIcon);
+                            scriptEditorScrollPane.getGutter().addOffsetTrackingIcon(
+                                    scriptEditorTA.getLineStartOffset(currentRunningStep), errorIcon);
                         } catch (BadLocationException e) {
                             e.printStackTrace();
                         }
@@ -1027,7 +1038,8 @@ public class AgentDebuggerFrame extends JFrame {
                     scriptEditorScrollPane.getGutter().removeTrackingIcon(info);
                 }
             }
-            scriptEditorScrollPane.getGutter().addOffsetTrackingIcon(scriptEditorTA.getLineStartOffset(currentRunningStep + 1), skippedIcon);
+            scriptEditorScrollPane.getGutter()
+                    .addOffsetTrackingIcon(scriptEditorTA.getLineStartOffset(currentRunningStep + 1), skippedIcon);
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
@@ -1070,7 +1082,8 @@ public class AgentDebuggerFrame extends JFrame {
                 }
             }
             if (!found) {
-                scriptEditorScrollPane.getGutter().addOffsetTrackingIcon(scriptEditorTA.getLineStartOffset(line), skippedIcon);
+                scriptEditorScrollPane.getGutter().addOffsetTrackingIcon(scriptEditorTA.getLineStartOffset(line),
+                        skippedIcon);
             }
             if (flowController != null) {
                 if (flowController.getSkipList().contains(line)) {
