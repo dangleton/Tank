@@ -19,6 +19,7 @@ package com.intuit.tank.client.v1.project;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import com.intuit.tank.api.model.v1.project.ProjectContainer;
 import com.intuit.tank.api.model.v1.project.ProjectTO;
@@ -72,6 +73,38 @@ public class ProjectServiceClientV1 extends BaseRestClient {
                 ProjectService.METHOD_DELETE, projectId));
         ClientResponse response = webResource.delete(ClientResponse.class);
         exceptionHandler.checkStatusCode(response);
+    }
+
+    /**
+     * @{inheritDoc
+     */
+    public ProjectTO getProject(int projectId) throws RestServiceException {
+        WebResource webResource = client.resource(urlBuilder
+                .buildUrl(ProjectService.METHOD_PROJECT, projectId));
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_XML)
+                .get(ClientResponse.class);
+        if (response.getStatus() == Status.NOT_FOUND.getStatusCode()) {
+            return null;
+        }
+        exceptionHandler.checkStatusCode(response);
+        ProjectTO container = response.getEntity(ProjectTO.class);
+        return container;
+    }
+
+    /**
+     * @{inheritDoc
+     */
+    public Integer runProject(int projectId) throws RestServiceException {
+        WebResource webResource = client.resource(urlBuilder
+                .buildUrl(ProjectService.METHOD_RUN, projectId));
+        ClientResponse response = webResource.accept(MediaType.TEXT_PLAIN)
+                .post(ClientResponse.class);
+        if (response.getStatus() == Status.NOT_FOUND.getStatusCode()) {
+            return null;
+        }
+        exceptionHandler.checkStatusCode(response);
+        Integer ret = response.getEntity(Integer.class);
+        return ret;
     }
 
     /**

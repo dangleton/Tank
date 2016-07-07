@@ -268,6 +268,7 @@ public class Variables {
 
     private void logVariable(String key, String value) {
         if (doLog && !key.equalsIgnoreCase("_startTime")) {
+            value = key.toLowerCase().contains("secure") ? "*****" : value;
             LOG.info(LogUtil.getLogMessage("Setting variable " + key + " = " + value));
         }
     }

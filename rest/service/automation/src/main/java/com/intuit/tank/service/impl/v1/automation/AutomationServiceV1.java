@@ -30,7 +30,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -59,7 +58,6 @@ import com.intuit.tank.dao.ProjectDao;
 import com.intuit.tank.dao.ScriptDao;
 import com.intuit.tank.dao.WorkloadDao;
 import com.intuit.tank.dao.util.ProjectDaoUtil;
-import com.intuit.tank.harness.StopBehavior;
 import com.intuit.tank.perfManager.workLoads.util.WorkloadScriptUtil;
 import com.intuit.tank.project.BaseEntity;
 import com.intuit.tank.project.DataFile;
@@ -79,7 +77,6 @@ import com.intuit.tank.project.ScriptGroup;
 import com.intuit.tank.project.ScriptGroupStep;
 import com.intuit.tank.project.ScriptStep;
 import com.intuit.tank.project.TestPlan;
-import com.intuit.tank.project.User;
 import com.intuit.tank.project.Workload;
 import com.intuit.tank.script.processor.ScriptProcessor;
 import com.intuit.tank.service.impl.v1.cloud.JobController;
@@ -106,7 +103,6 @@ import com.sun.jersey.multipart.FormDataMultiPart;
 public class AutomationServiceV1 implements AutomationService {
 
     private static final Logger LOG = Logger.getLogger(AutomationServiceV1.class);
-
 
     @Context
     private ServletContext servletContext;
@@ -195,7 +191,7 @@ public class AutomationServiceV1 implements AutomationService {
                     IOUtils.closeQuietly(is);
                 }
             }
-             // now send off to service
+            // now send off to service
             Project p = getOrCreateProject(request);
             JobInstance job = addJobToQueue(p, request, script);
             LOG.info("Automation Job (" + job.getId() + ") requested with values: " + job);
@@ -237,23 +233,28 @@ public class AutomationServiceV1 implements AutomationService {
             type = ModificationType.ADD;
         }
         JobConfiguration jobConfiguration = project.getWorkloads().get(0).getJobConfiguration();
-        // jobConfiguration.setRampTime(TimeUtil.parseTimeString(request.getRampTime()));
-        jobConfiguration.setRampTimeExpression(request.getRampTime());
-        jobConfiguration.setStopBehavior(request.getStopBehavior() != null ? request.getStopBehavior().name()
-                : StopBehavior.END_OF_SCRIPT_GROUP.name());
-        jobConfiguration.setSimulationTimeExpression(request.getSimulationTime());
+
+        jobConfiguration.setRampTimeExpression(
+                getStringWithDefault(request.getRampTime(), jobConfiguration.getRampTimeExpression()));
+
+        if (request.getStopBehavior() != null) {
+            jobConfiguration.setStopBehavior(request.getStopBehavior().name());
+        }
+        jobConfiguration.setSimulationTimeExpression(
+                getStringWithDefault(request.getSimulationTime(), jobConfiguration.getSimulationTimeExpression()));
         boolean hasSimTime = jobConfiguration.getSimulationTime() > 0
                 || (StringUtils.isNotBlank(request.getSimulationTime()) && !"0".equals(request.getSimulationTime()));
         jobConfiguration.setTerminationPolicy(hasSimTime ? TerminationPolicy.time
                 : TerminationPolicy.script);
         jobConfiguration.setUserIntervalIncrement(request.getUserIntervalIncrement());
-        jobConfiguration.getJobRegions().clear();
-        JobRegionDao jrd = new JobRegionDao();
-        for (AutomationJobRegion r : request.getJobRegions()) {
-            JobRegion jr = jrd.saveOrUpdate(new JobRegion(r.getRegion(), r.getUsers()));
-            jobConfiguration.getJobRegions().add(jr);
+        if (!request.getJobRegions().isEmpty()) {
+            jobConfiguration.getJobRegions().clear();
+            JobRegionDao jrd = new JobRegionDao();
+            for (AutomationJobRegion r : request.getJobRegions()) {
+                JobRegion jr = jrd.saveOrUpdate(new JobRegion(r.getRegion(), r.getUsers()));
+                jobConfiguration.getJobRegions().add(jr);
+            }
         }
-
         Map<String, String> varMap = jobConfiguration.getVariables();
         varMap.putAll(request.getVariables());
 
@@ -261,6 +262,14 @@ public class AutomationServiceV1 implements AutomationService {
         sendMsg(project, type);
 
         return project;
+    }
+
+    private String getStringWithDefault(String value, String defaultValue) {
+        String ret = defaultValue;
+        if (StringUtils.isNotBlank(value)) {
+            ret = value;
+        }
+        return ret;
     }
 
     private void sendMsg(BaseEntity entity, ModificationType type) {
@@ -278,7 +287,8 @@ public class AutomationServiceV1 implements AutomationService {
         Workload workload = p.getWorkloads().get(0);
         JobConfiguration jc = workload.getJobConfiguration();
         JobQueue queue = jobQueueDao.findOrCreateForProjectId(p.getId());
-        String name = request.getScriptName() + "_" + workload.getJobConfiguration().getTotalVirtualUsers() + "_users_"
+        String scriptName = request.getScriptName() != null ? request.getScriptName() : p.getName();
+        String name = scriptName + "_" + workload.getJobConfiguration().getTotalVirtualUsers() + "_users_"
                 + ReportUtil.getTimestamp(new Date());
         JobInstance jobInstance = new JobInstance(workload, name);
         jobInstance.setScheduledTime(new Date());
@@ -331,11 +341,12 @@ public class AutomationServiceV1 implements AutomationService {
         }
         workload = new WorkloadDao().saveOrUpdate(workload);
         Set<Group> groups = null;
-//        if (user != null) {
-//            groups  = user.getGroups();
-//        }
+        // if (user != null) {
+        // groups = user.getGroups();
+        // }
         String jobDetails = JobDetailFormatter.createJobDetails(
-                new JobValidator(workload.getTestPlans(), jobInstance.getVariables(), false), workload, jobInstance, groups);
+                new JobValidator(workload.getTestPlans(), jobInstance.getVariables(), false), workload, jobInstance,
+                groups);
         jobInstance.setJobDetails(jobDetails);
         jobInstance = jobInstanceDao.saveOrUpdate(jobInstance);
         jobQueueDao.saveOrUpdate(queue);

@@ -102,7 +102,7 @@ public class TankHttpClient4 implements TankHttpClient {
         httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
         requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).setCircularRedirectsAllowed(true).setAuthenticationEnabled(true).setRedirectsEnabled(true)
                 .setMaxRedirects(100).build();
-
+        
         // Make sure the same context is used to execute logically related
         // requests
         context = HttpClientContext.create();
@@ -110,6 +110,27 @@ public class TankHttpClient4 implements TankHttpClient {
         context.setCookieStore(new BasicCookieStore());
         context.setRequestConfig(requestConfig);
     }
+
+//    private RedirectStrategy getRedirectStrategy() {
+//        RedirectStrategy ret = new DefaultRedirectStrategy() {                
+//            public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context)  {
+//                boolean isRedirect=false;
+//                try {
+//                    isRedirect = super.isRedirected(request, response, context);
+//                } catch (ProtocolException e) {
+//                    LOG.error("Error in protocol: " + e, e);
+//                }
+//                if (!isRedirect) {
+//                    int responseCode = response.getStatusLine().getStatusCode();
+//                    if (responseCode == 301 || responseCode == 302) {
+//                        return true;
+//                    }
+//                }
+//                return isRedirect;
+//            }
+//        };
+//        return ret;
+//    }
 
     public void setConnectionTimeout(long connectionTimeout) {
         requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout((int) connectionTimeout).setCircularRedirectsAllowed(true).setAuthenticationEnabled(true)
@@ -184,6 +205,7 @@ public class TankHttpClient4 implements TankHttpClient {
             entity = new StringEntity(requestBody, ContentType.create(request.getContentType(), request.getContentTypeCharSet()));
         }
         httppost.setEntity(entity);
+        request.getHeaderInformation().put("Content-Type", request.getContentType());
         sendRequest(request, httppost, requestBody);
     }
 

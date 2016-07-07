@@ -108,7 +108,7 @@ public class RequestRunner implements Runner {
                     }
                     String proxyHost = proxyInfo[0];
                     tsc.getHttpClient().setProxy(proxyHost, proxyPort);
-                    
+
                 }
             } catch (Exception e) {
                 LOG.error("Error setting proxy " + proxy + ": " + e, e);
@@ -146,7 +146,7 @@ public class RequestRunner implements Runner {
             baseRequest.setBody(variables.evaluate(payload));
         }
         LogUtil.getLogEvent().setRequest(baseRequest);
-        //unset proxy TODO: add proxy and noproxy requ3est objects
+        // unset proxy TODO: add proxy and noproxy requ3est objects
         tsc.getHttpClient().setProxy(null, -1);
     }
 
@@ -221,11 +221,12 @@ public class RequestRunner implements Runner {
      * @param req
      * @param resp
      */
-    private void processPerfResponse(String result, String uniqueName, int threadNum, BaseRequest req, BaseResponse resp) {
+    private void processPerfResponse(String result, String uniqueName, int threadNum, BaseRequest req,
+            BaseResponse resp) {
         try {
             TankResultBuilder builder = new TankResultBuilder();
             builder.withJobId(APITestHarness.getInstance().getAgentRunData().getJobId())
-            .withInstanceId(APITestHarness.getInstance().getAgentRunData().getInstanceId());
+                    .withInstanceId(APITestHarness.getInstance().getAgentRunData().getInstanceId());
             if (resp != null) {
                 builder.withResponseTime((int) resp.getResponseTime());
                 builder.withStatusCode(resp.getHttpCode());
@@ -256,7 +257,8 @@ public class RequestRunner implements Runner {
      */
     private boolean checkPreValidations() {
         boolean ret = false;
-        List<ValidationData> validations = new ArrayList<ValidationData>(response.getValidation().getHeaderValidation());
+        List<ValidationData> validations = new ArrayList<ValidationData>(
+                response.getValidation().getHeaderValidation());
         validations.addAll(response.getValidation().getBodyValidation());
         validations.addAll(response.getValidation().getCookieValidation());
         validations = filterPhase(RequestDataPhase.POST_REQUEST, validations);
@@ -686,9 +688,9 @@ public class RequestRunner implements Runner {
                 value = variables.evaluate(value);
                 if (header.getKey().equalsIgnoreCase("Content-Type")) {
                     baseRequest.setContentType(value);
-                } else {
-                    baseRequest.addHeader(header.getKey(), value);
                 }
+                baseRequest.addHeader(header.getKey(), value);
+
             }
         }
         // now add configured headers

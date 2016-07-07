@@ -414,7 +414,7 @@ public class TankOkHttpClient implements TankHttpClient {
         if (requestBodyEntity != null) {
             requestBuilder.post(requestBodyEntity);
         }
-
+        request.getHeaderInformation().put("Content-Type", request.getContentType());
         sendRequest(request, requestBuilder, request.getBody(), "post");
 
     }
