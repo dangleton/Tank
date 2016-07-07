@@ -544,10 +544,12 @@ public class RequestRunner implements Runner {
      */
     private String validateBody(ValidationData original, ValidationData item, Variables variables,
             BaseResponse reqResponse, String uniqueName) {
+        variables.addVariable("RESPONSE_BODY", reqResponse.getResponseBody());
         String actualValue = reqResponse.getValue(item.getKey());
         LOG.debug("Body compare actual value: " + actualValue);
         boolean result = evaluateResult(actualValue, item.getValue(), item.getCondition(),
                 variables);
+        variables.removeVariable("RESPONSE_BODY");
         if (result) {
             return TankConstants.HTTP_CASE_PASS;
         }
