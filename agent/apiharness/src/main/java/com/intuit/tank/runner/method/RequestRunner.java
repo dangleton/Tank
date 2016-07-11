@@ -330,6 +330,7 @@ public class RequestRunner implements Runner {
             }
 
             for (ValidationData item : bodyValidation) {
+                variables.addVariable("RESPONSE_BODY", reqResponse.getResponseBody());
                 ValidationData original = item.copy();
                 item = item.copy();
                 if (ValidationUtil.isVariable(item.getValue()) && variables.variableExists(item.getValue())) {
@@ -343,6 +344,7 @@ public class RequestRunner implements Runner {
                 if (!testCaseResult.equalsIgnoreCase(TankConstants.HTTP_CASE_PASS)) {
                     testStepResult = TankConstants.HTTP_CASE_FAIL;
                 }
+                variables.removeVariable("RESPONSE_BODY");
             }
 
             for (ValidationData item : cookieValidation) {
