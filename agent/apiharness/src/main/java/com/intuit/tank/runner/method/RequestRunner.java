@@ -525,7 +525,7 @@ public class RequestRunner implements Runner {
      */
     private String validateHeader(ValidationData original, ValidationData item, Variables variables,
             BaseResponse reqResponse, String uniqueName) {
-        String actualValue = reqResponse.getHttpHeader(item.getKey());
+        String actualValue = reqResponse.getHttpHeader(variables.evaluate(item.getKey()));
         boolean result = this.evaluateResult(actualValue, item.getValue(), item.getCondition(),
                 variables);
         if (result) {
@@ -547,7 +547,7 @@ public class RequestRunner implements Runner {
     private String validateBody(ValidationData original, ValidationData item, Variables variables,
             BaseResponse reqResponse, String uniqueName) {
         variables.addVariable("RESPONSE_BODY", reqResponse.getResponseBody());
-        String actualValue = reqResponse.getValue(item.getKey());
+        String actualValue = reqResponse.getValue(variables.evaluate(item.getKey()));
         LOG.debug("Body compare actual value: " + actualValue);
         boolean result = evaluateResult(actualValue, item.getValue(), item.getCondition(),
                 variables);
@@ -572,7 +572,7 @@ public class RequestRunner implements Runner {
      */
     private String validateCookie(ValidationData original, ValidationData item, Variables variables,
             BaseResponse reqResponse, String uniqueName) {
-        String actualValue = reqResponse.getCookie(item.getKey());
+        String actualValue = reqResponse.getCookie(variables.evaluate(item.getKey()));
         LOG.debug("Cookie compare actual value: " + actualValue);
         boolean result = evaluateResult(actualValue, item.getValue(), item.getCondition(),
                 variables);
