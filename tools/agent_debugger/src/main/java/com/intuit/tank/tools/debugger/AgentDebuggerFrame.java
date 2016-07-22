@@ -54,6 +54,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Highlighter.Highlight;
 import javax.xml.bind.JAXBException;
 
 import org.apache.commons.io.FileUtils;
@@ -914,14 +915,23 @@ public class AgentDebuggerFrame extends JFrame {
                         debugStep.setResponse(context.getResponse());
                     }
                     try {
+                        // highlight the line
+                        int lineStartOffset = scriptEditorTA.getLineStartOffset(currentRunningStep);
+                        int lineEndOffset = scriptEditorTA.getLineEndOffset(currentRunningStep);
                         if (context.getResponse() != null && (context.getResponse().getHttpCode() >= 400
                                 || context.getResponse().getHttpCode() == -1)) {
-                            // highlight the line
-                            int lineStartOffset = scriptEditorTA.getLineStartOffset(currentRunningStep);
-                            int lineEndOffset = scriptEditorTA.getLineEndOffset(currentRunningStep);
 
                             scriptEditorTA.getHighlighter().addHighlight(lineStartOffset, lineEndOffset,
                                     new SquiggleUnderlineHighlightPainter(Color.RED));
+                            
+                        } else {
+                            // if no error in request then remove the highlite if it has one
+                            for (Highlight h : scriptEditorTA.getHighlighter().getHighlights()) {
+                                if (h.getStartOffset() == lineStartOffset && h.getEndOffset() == lineEndOffset) {
+                                    scriptEditorTA.getHighlighter().removeHighlight(h);
+                                    break;
+                                }
+                            }
                         }
                     } catch (BadLocationException e1) {
                         e1.printStackTrace();
@@ -933,6 +943,13 @@ public class AgentDebuggerFrame extends JFrame {
                                     scriptEditorTA.getLineStartOffset(currentRunningStep), errorIcon);
                         } catch (BadLocationException e) {
                             e.printStackTrace();
+                        }
+                    } else {
+                        for (GutterIconInfo gi : scriptEditorScrollPane.getGutter().getAllTrackingIcons()) {
+                          //remove icon if its there and no errors in current request
+                            if (gi.getIcon() == errorIcon) {
+                                scriptEditorScrollPane.getGutter().removeTrackingIcon(gi);
+                            } 
                         }
                     }
                     fireStepExited(context.getTestStep().getStepIndex());
