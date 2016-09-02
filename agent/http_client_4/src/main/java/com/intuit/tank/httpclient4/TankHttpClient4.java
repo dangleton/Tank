@@ -36,13 +36,9 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -60,11 +56,10 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.log4j.Logger;
 
@@ -105,7 +100,8 @@ public class TankHttpClient4 implements TankHttpClient {
             LOG.error("Error setting accept all: " + e, e);
         }
 
-        httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(getRedirectStrategy()).build();
+        
+        httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy()).build();
         requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).setCircularRedirectsAllowed(true).setAuthenticationEnabled(true).setRedirectsEnabled(true)
                 .setMaxRedirects(100).build();
         
@@ -117,26 +113,6 @@ public class TankHttpClient4 implements TankHttpClient {
         context.setRequestConfig(requestConfig);
     }
 
-    private RedirectStrategy getRedirectStrategy() {
-        RedirectStrategy ret = new DefaultRedirectStrategy() {                
-            public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context)  {
-                boolean isRedirect=false;
-                try {
-                    isRedirect = super.isRedirected(request, response, context);
-                } catch (ProtocolException e) {
-                    LOG.error("Error in protocol: " + e, e);
-                }
-                if (!isRedirect) {
-                    int responseCode = response.getStatusLine().getStatusCode();
-                    if (responseCode == 301 || responseCode == 302) {
-                        return true;
-                    }
-                }
-                return isRedirect;
-            }
-        };
-        return ret;
-    }
 
     public void setConnectionTimeout(long connectionTimeout) {
         requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout((int) connectionTimeout).setCircularRedirectsAllowed(true).setAuthenticationEnabled(true)
@@ -264,10 +240,10 @@ public class TankHttpClient4 implements TankHttpClient {
         if (StringUtils.isNotBlank(proxyhost)) {
             HttpHost proxy = new HttpHost(proxyhost, proxyport);
             DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(getRedirectStrategy()).setRoutePlanner(routePlanner).build();
+            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy()).setRoutePlanner(routePlanner).build();
         } else {
 
-            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(getRedirectStrategy()).build();
+            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy()).build();
         }
     }
 
