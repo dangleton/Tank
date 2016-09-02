@@ -70,7 +70,7 @@
         <title>Editing a Project</title>
         <para>You can click on the edit icon at the far right of the
             project row or click the name of the Project to edit a
-            project. From the edit screends, you can set the properties
+            project. From the edit screen, you can set the properties
             of the project as well as run a test.
         </para>
         <section>
@@ -122,7 +122,7 @@
                     <term>Owner</term>
                     <listitem>
                         <para>
-                            The owner of this Project. Owners and Adminstrators have specific
+                            The owner of this Project. Owners and Administrators have specific
                             rights to Projects within
                             Intuit Tank. See Security for more information.
                         </para>
@@ -133,7 +133,7 @@
                     <term>Total Users</term>
                     <listitem>
                         <para>
-                            This is a read oly field that will total the
+                            This is a read only field that will total the
                             users for all the regions configured on the
                             <code>Users And Times</code>
                             tab.
@@ -184,7 +184,7 @@
                                     has been reached. Will run trough
                                     the script once in its entirety
                                     regardless of the simulation time
-                                    ant then continur running the last
+                                    and then continue running the last
                                     script group until the simulation
                                     time has been reached.
                                 </listitem>
@@ -254,7 +254,7 @@
                 Test Plans run a percentage of the users for the test.
                 Script groups are intended to be self contained flows for a user to
                 execute. They are the
-                demarkation unit
+                demarcation unit
                 for stopping a test as well as for looping after a test has met the
                 simulation time. Scripts are
                 a collection of steps
@@ -423,8 +423,8 @@
                 Use the
                 <code>Add Notification</code>
                 button to add a notification. Enter the email address or
-                addresses seperated by commas. Then select the lifecycle
-                events that this notificaiton should listen for.
+                addresses separated by commas. Then select the lifecycle
+                events that this notification should listen for.
                 <note>It's best practice to include all teams that could
                     be impacted by your performance test (i.e. network,
                     devops, database admins, security, etc.).</note>
@@ -440,41 +440,57 @@
 
         </section>
 
-        <section>
-            <title>Variables</title>
-            <para>Global variables can be set for the project. You can
-                allow these varaibles to be overridden by the scripts of
-                to be immutable (default).</para>
+    <section>
+        <title>Variables</title>
+        <para>
+            Global variables can be set for the project. You can
+            allow
+            these variables to be overridden by the scripts of
+            to be
+            immutable (default).
+        </para>
 
+        <para>
+            Use the
+            <code>Add Variable</code>
+            button and fill in the key and the value.
+        </para>
+        <para>
+            Check the
+            <code>Allow Scripts to Override Project Variables</code>
+            checkbox to allow scripts to override the values.
+        </para>
+
+        <para>
+            <mediaobject>
+                <imageobject>
+                    <imagedata fileref="images/projects/projects_11.png"
+                        format="PNG" align="Center" />
+                </imageobject>
+            </mediaobject>
+        </para>
+
+        <note>
             <para>
-                Use the
-                <code>Add Variable</code>
-                button and fill in the key and the value.
+                You can cause the agent to use a Proxy Server for
+                requests by setting
+                a variable named 'TANK_HTTP_PROXY' in
+                the format
+                proxyHost:proxyport. e.g. myProxyserver:80
             </para>
-            <para>
-                Check the
-                <code>Allow Scripts to Override Project Variables</code>
-                checkbox to allow scripts to override the values.
+        </note>
+        <tip>
+            <para>You can add the term "secure" to global variables that
+                hold sensitive data. This will result in any data being
+                dumped to the log file to be masked. For
+                more details
+                refer to securing variables section under
+                the script
+                chapter of the user guide.
             </para>
+        </tip>
 
-            <para>
-                <mediaobject>
-                    <imageobject>
-                        <imagedata fileref="images/projects/projects_11.png"
-                            format="PNG" align="Center" />
-                    </imageobject>
-                </mediaobject>
-            </para>
-
-            <note>
-                <para>
-                    You can cause the agent to use a Proxy Server for requests by setting
-                    a variable named 'TANK_HTTP_PROXY' in the format
-                    proxyHost:proxyport. e.g. myProxyserver:80
-                </para>
-            </note>
-
-        </section>
+    </section>
 
         <section>
             <title>Schedule Job</title>
@@ -551,10 +567,10 @@
                 </varlistentry>
 
                 <varlistentry>
-                    <term>Assign Elastic Ips</term>
+                    <term>Assign Elastic IPs</term>
                     <listitem>
                         <para>Whether the agents should use an elastic
-                            ip that you have reserved. If no ips are
+                            IP that you have reserved. If no IPs are
                             available, then the agent will not get an
                             Elastic IP.</para>
                     </listitem>
@@ -580,8 +596,8 @@
 
         <section>
             <title>Job Queue</title>
-            <para>The Job Queue show all the jobs tht have been
-                scheduled or run. It allows you to control the execution
+            <para>The Job Queue shows all the jobs that have been
+                scheduled, ran or running. It allows you to control the execution
                 of
                 the test and monitor the current state of the test.
             </para>
