@@ -5,7 +5,7 @@
 
   <groupId>com.intuit.tank</groupId>
   <artifactId>tank-parent</artifactId>
-  <version>2.1.6</version>
+  <version>2.1.8</version>
 
   <packaging>pom</packaging>
   <name>Tank Parent</name>
@@ -193,7 +193,7 @@
         <module>harness_data</module>
         <module>search</module>
         <module>reporting</module>
-        <module>test_support</module>
+        <!--<module>test_support</module>-->
         <module>api</module>
         <module>data_model</module>
         <module>data_access</module>
@@ -256,7 +256,7 @@
         <module>harness_data</module>
         <module>search</module>
         <module>reporting</module>
-        <module>test_support</module>
+        <!--<module>test_support</module>-->
         <module>api</module>
         <module>data_model</module>
         <module>data_access</module>

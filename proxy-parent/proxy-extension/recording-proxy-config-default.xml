@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<recording-proxy-config>
+<proxy-port>8888</proxy-port>
+<follow-redirects>true</follow-redirects>
+<output-file>/Users/denisa/dev/tank/proxy-parent/proxy-extension/outputFile.xml</output-file>
+<inclusions/>
+<exclusions/>
+<body-inclusions/>
+<body-exclusions>
+<rule check="response" header="content-type" match="contains">image</rule>
+</body-exclusions>
+</recording-proxy-config>

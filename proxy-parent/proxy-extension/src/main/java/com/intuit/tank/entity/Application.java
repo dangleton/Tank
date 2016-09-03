@@ -197,7 +197,7 @@ public final class Application {
         if (transaction != null && sessionStarted && !paused) {
             int statusCode = HeaderParser.extractStatusCode(response.getFirstLine());
             HeaderParser hp = new HeaderParser(response);
-            if (proxyConfiguration.isFollowRedirects() && statusCode == 302) { // redirect
+            if (proxyConfiguration.isFollowRedirects() && (statusCode == 302 || statusCode == 301) ){ // redirect
                 String location = hp.getRedirectLocation();
                 try {
                     String oldLocation = getLocation(req);

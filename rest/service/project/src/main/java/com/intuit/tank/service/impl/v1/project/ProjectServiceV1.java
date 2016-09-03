@@ -99,6 +99,31 @@ public class ProjectServiceV1 implements ProjectService {
     public Response deleteProject(int projectId) {
         return delete(projectId);
     }
+    
+    /**
+     * @{inheritDoc
+     */
+    @Override
+    public Response getProject(int projectId) {
+        ResponseBuilder responseBuilder = Response.ok();
+        ProjectDao dao = new ProjectDao();
+        try {
+            Project project = dao.findById(projectId);
+            if (project == null) {
+                LOG.warn("Proect with id " + projectId + "does not exist.");
+                responseBuilder.status(Status.NOT_FOUND);
+                responseBuilder.entity("Project with id " + projectId + " does not exist.");
+
+            } else {
+                responseBuilder.entity(ProjectServiceUtil.projectToTransferObject(project));
+            }
+        } catch (RuntimeException e) {
+            LOG.error("Error deleting project: " + e, e);
+            responseBuilder.status(Status.INTERNAL_SERVER_ERROR);
+            responseBuilder.entity("An error occurred while deleting the project.");
+        }
+        return responseBuilder.build();
+    }
 
     /**
      * @{inheritDoc

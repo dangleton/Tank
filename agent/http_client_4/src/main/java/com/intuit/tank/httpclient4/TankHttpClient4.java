@@ -57,6 +57,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -99,10 +100,11 @@ public class TankHttpClient4 implements TankHttpClient {
             LOG.error("Error setting accept all: " + e, e);
         }
 
-        httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+        
+        httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy()).build();
         requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).setCircularRedirectsAllowed(true).setAuthenticationEnabled(true).setRedirectsEnabled(true)
                 .setMaxRedirects(100).build();
-
+        
         // Make sure the same context is used to execute logically related
         // requests
         context = HttpClientContext.create();
@@ -110,6 +112,7 @@ public class TankHttpClient4 implements TankHttpClient {
         context.setCookieStore(new BasicCookieStore());
         context.setRequestConfig(requestConfig);
     }
+
 
     public void setConnectionTimeout(long connectionTimeout) {
         requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout((int) connectionTimeout).setCircularRedirectsAllowed(true).setAuthenticationEnabled(true)
@@ -184,6 +187,7 @@ public class TankHttpClient4 implements TankHttpClient {
             entity = new StringEntity(requestBody, ContentType.create(request.getContentType(), request.getContentTypeCharSet()));
         }
         httppost.setEntity(entity);
+        request.getHeaderInformation().put("Content-Type", request.getContentType());
         sendRequest(request, httppost, requestBody);
     }
 
@@ -236,10 +240,10 @@ public class TankHttpClient4 implements TankHttpClient {
         if (StringUtils.isNotBlank(proxyhost)) {
             HttpHost proxy = new HttpHost(proxyhost, proxyport);
             DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRoutePlanner(routePlanner).build();
+            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy()).setRoutePlanner(routePlanner).build();
         } else {
 
-            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy()).build();
         }
     }
 

@@ -199,7 +199,8 @@ public class LogEvent implements Serializable {
         StringBuilder sb = new StringBuilder();
         if (variables != null) {
             for (Entry<String, String> entry : variables.getVaribleValues().entrySet()) {
-                appendField(sb, entry.getKey(), entry.getValue(), "=");
+                String value = entry.getKey().toLowerCase().contains("secure") ? "*****" : entry.getValue();
+                appendField(sb, entry.getKey(), value, "=");
             }
         }
         return sb.toString();

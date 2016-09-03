@@ -108,7 +108,7 @@ public class RequestRunner implements Runner {
                     }
                     String proxyHost = proxyInfo[0];
                     tsc.getHttpClient().setProxy(proxyHost, proxyPort);
-                    
+
                 }
             } catch (Exception e) {
                 LOG.error("Error setting proxy " + proxy + ": " + e, e);
@@ -146,7 +146,7 @@ public class RequestRunner implements Runner {
             baseRequest.setBody(variables.evaluate(payload));
         }
         LogUtil.getLogEvent().setRequest(baseRequest);
-        //unset proxy TODO: add proxy and noproxy requ3est objects
+        // unset proxy TODO: add proxy and noproxy requ3est objects
         tsc.getHttpClient().setProxy(null, -1);
     }
 
@@ -221,11 +221,12 @@ public class RequestRunner implements Runner {
      * @param req
      * @param resp
      */
-    private void processPerfResponse(String result, String uniqueName, int threadNum, BaseRequest req, BaseResponse resp) {
+    private void processPerfResponse(String result, String uniqueName, int threadNum, BaseRequest req,
+            BaseResponse resp) {
         try {
             TankResultBuilder builder = new TankResultBuilder();
             builder.withJobId(APITestHarness.getInstance().getAgentRunData().getJobId())
-            .withInstanceId(APITestHarness.getInstance().getAgentRunData().getInstanceId());
+                    .withInstanceId(APITestHarness.getInstance().getAgentRunData().getInstanceId());
             if (resp != null) {
                 builder.withResponseTime((int) resp.getResponseTime());
                 builder.withStatusCode(resp.getHttpCode());
@@ -256,7 +257,8 @@ public class RequestRunner implements Runner {
      */
     private boolean checkPreValidations() {
         boolean ret = false;
-        List<ValidationData> validations = new ArrayList<ValidationData>(response.getValidation().getHeaderValidation());
+        List<ValidationData> validations = new ArrayList<ValidationData>(
+                response.getValidation().getHeaderValidation());
         validations.addAll(response.getValidation().getBodyValidation());
         validations.addAll(response.getValidation().getCookieValidation());
         validations = filterPhase(RequestDataPhase.POST_REQUEST, validations);
@@ -328,6 +330,7 @@ public class RequestRunner implements Runner {
             }
 
             for (ValidationData item : bodyValidation) {
+                variables.addVariable("RESPONSE_BODY", reqResponse.getResponseBody());
                 ValidationData original = item.copy();
                 item = item.copy();
                 if (ValidationUtil.isVariable(item.getValue()) && variables.variableExists(item.getValue())) {
@@ -341,6 +344,7 @@ public class RequestRunner implements Runner {
                 if (!testCaseResult.equalsIgnoreCase(TankConstants.HTTP_CASE_PASS)) {
                     testStepResult = TankConstants.HTTP_CASE_FAIL;
                 }
+                variables.removeVariable("RESPONSE_BODY");
             }
 
             for (ValidationData item : cookieValidation) {
@@ -521,7 +525,7 @@ public class RequestRunner implements Runner {
      */
     private String validateHeader(ValidationData original, ValidationData item, Variables variables,
             BaseResponse reqResponse, String uniqueName) {
-        String actualValue = reqResponse.getHttpHeader(item.getKey());
+        String actualValue = reqResponse.getHttpHeader(variables.evaluate(item.getKey()));
         boolean result = this.evaluateResult(actualValue, item.getValue(), item.getCondition(),
                 variables);
         if (result) {
@@ -542,10 +546,12 @@ public class RequestRunner implements Runner {
      */
     private String validateBody(ValidationData original, ValidationData item, Variables variables,
             BaseResponse reqResponse, String uniqueName) {
-        String actualValue = reqResponse.getValue(item.getKey());
+        variables.addVariable("RESPONSE_BODY", reqResponse.getResponseBody());
+        String actualValue = reqResponse.getValue(variables.evaluate(item.getKey()));
         LOG.debug("Body compare actual value: " + actualValue);
         boolean result = evaluateResult(actualValue, item.getValue(), item.getCondition(),
                 variables);
+        variables.removeVariable("RESPONSE_BODY");
         if (result) {
             return TankConstants.HTTP_CASE_PASS;
         }
@@ -566,7 +572,7 @@ public class RequestRunner implements Runner {
      */
     private String validateCookie(ValidationData original, ValidationData item, Variables variables,
             BaseResponse reqResponse, String uniqueName) {
-        String actualValue = reqResponse.getCookie(item.getKey());
+        String actualValue = reqResponse.getCookie(variables.evaluate(item.getKey()));
         LOG.debug("Cookie compare actual value: " + actualValue);
         boolean result = evaluateResult(actualValue, item.getValue(), item.getCondition(),
                 variables);
@@ -686,9 +692,9 @@ public class RequestRunner implements Runner {
                 value = variables.evaluate(value);
                 if (header.getKey().equalsIgnoreCase("Content-Type")) {
                     baseRequest.setContentType(value);
-                } else {
-                    baseRequest.addHeader(header.getKey(), value);
                 }
+                baseRequest.addHeader(header.getKey(), value);
+
             }
         }
         // now add configured headers

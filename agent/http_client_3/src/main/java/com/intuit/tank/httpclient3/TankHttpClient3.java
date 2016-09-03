@@ -81,23 +81,19 @@ public class TankHttpClient3 implements TankHttpClient {
         httpclient.getParams().setBooleanParameter("http.protocol.allow-circular-redirects", true);
         httpclient.getParams().setIntParameter("http.protocol.max-redirects", 100);
         httpclient.setState(new HttpState());
-        @SuppressWarnings("deprecation")
-        Protocol easyhttps = new Protocol("https", new EasySSLProtocolSocketFactory(), 443);
+        @SuppressWarnings("deprecation") Protocol easyhttps = new Protocol("https", new EasySSLProtocolSocketFactory(),
+                443);
         Protocol.registerProtocol("https", easyhttps);
     }
 
     public void setConnectionTimeout(long connectionTimeout) {
         httpclient.getParams().setConnectionManagerTimeout(connectionTimeout);
     }
-    
-    
 
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.intuit.tank.httpclient3.TankHttpClient#doGet(com.intuit.tank.http.
-     * BaseRequest)
+     * @see com.intuit.tank.httpclient3.TankHttpClient#doGet(com.intuit.tank.http. BaseRequest)
      */
     @Override
     public void doGet(BaseRequest request) {
@@ -108,9 +104,7 @@ public class TankHttpClient3 implements TankHttpClient {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.intuit.tank.httpclient3.TankHttpClient#doPut(com.intuit.tank.http.
-     * BaseRequest)
+     * @see com.intuit.tank.httpclient3.TankHttpClient#doPut(com.intuit.tank.http. BaseRequest)
      */
     @Override
     public void doPut(BaseRequest request) {
@@ -118,7 +112,8 @@ public class TankHttpClient3 implements TankHttpClient {
             PutMethod httpput = new PutMethod(request.getRequestUrl());
             // Multiple calls can be expensive, so get it once
             String requestBody = request.getBody();
-            StringRequestEntity entity = new StringRequestEntity(requestBody, request.getContentType(), request.getContentTypeCharSet());
+            StringRequestEntity entity = new StringRequestEntity(requestBody, request.getContentType(),
+                    request.getContentTypeCharSet());
             httpput.setRequestEntity(entity);
             sendRequest(request, httpput, requestBody);
         } catch (UnsupportedEncodingException e) {
@@ -140,9 +135,7 @@ public class TankHttpClient3 implements TankHttpClient {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.intuit.tank.httpclient3.TankHttpClient#doDelete(com.intuit.tank.http.
-     * BaseRequest)
+     * @see com.intuit.tank.httpclient3.TankHttpClient#doDelete(com.intuit.tank.http. BaseRequest)
      */
     @Override
     public void doDelete(BaseRequest request) {
@@ -159,9 +152,7 @@ public class TankHttpClient3 implements TankHttpClient {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.intuit.tank.httpclient3.TankHttpClient#doPost(com.intuit.tank.http.
-     * BaseRequest)
+     * @see com.intuit.tank.httpclient3.TankHttpClient#doPost(com.intuit.tank.http. BaseRequest)
      */
     @Override
     public void doPost(BaseRequest request) {
@@ -174,9 +165,11 @@ public class TankHttpClient3 implements TankHttpClient {
 
                 entity = new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), httppost.getParams());
             } else {
-                entity = new StringRequestEntity(requestBody, request.getContentType(), request.getContentTypeCharSet());
+                entity = new StringRequestEntity(requestBody, request.getContentType(),
+                        request.getContentTypeCharSet());
             }
             httppost.setRequestEntity(entity);
+            request.getHeaderInformation().put("Content-Type", request.getContentType());
             sendRequest(request, httppost, requestBody);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
@@ -186,14 +179,14 @@ public class TankHttpClient3 implements TankHttpClient {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * com.intuit.tank.httpclient3.TankHttpClient#addAuth(com.intuit.tank.http.
-     * AuthCredentials)
+     * @see com.intuit.tank.httpclient3.TankHttpClient#addAuth(com.intuit.tank.http. AuthCredentials)
      */
     @Override
     public void addAuth(AuthCredentials creds) {
-        String host = (StringUtils.isBlank(creds.getHost()) || "*".equals(creds.getHost())) ? AuthScope.ANY_HOST : creds.getHost();
-        String realm = (StringUtils.isBlank(creds.getRealm()) || "*".equals(creds.getRealm())) ? AuthScope.ANY_REALM : creds.getRealm();
+        String host = (StringUtils.isBlank(creds.getHost()) || "*".equals(creds.getHost())) ? AuthScope.ANY_HOST
+                : creds.getHost();
+        String realm = (StringUtils.isBlank(creds.getRealm()) || "*".equals(creds.getRealm())) ? AuthScope.ANY_REALM
+                : creds.getRealm();
         int port = NumberUtils.toInt(creds.getPortString(), AuthScope.ANY_PORT);
         String scheme = creds.getScheme() != null ? creds.getScheme().getRepresentation() : AuthScope.ANY_SCHEME;
 
@@ -224,14 +217,16 @@ public class TankHttpClient3 implements TankHttpClient {
     private void sendRequest(BaseRequest request, @Nonnull HttpMethod method, String requestBody) {
         String uri = null;
         long waitTime = 0L;
-
         try {
             uri = method.getURI().toString();
-            logger.debug(request.getLogUtil().getLogMessage("About to " + method.getName() + " request to " + uri + " with requestBody  " + requestBody, LogEventType.Informational));
+            logger.debug(request.getLogUtil().getLogMessage(
+                    "About to " + method.getName() + " request to " + uri + " with requestBody  " + requestBody,
+                    LogEventType.Informational));
             List<String> cookies = new ArrayList<String>();
             if (httpclient != null && httpclient.getState() != null && httpclient.getState().getCookies() != null) {
                 for (Cookie cookie : httpclient.getState().getCookies()) {
-                    cookies.add("REQUEST COOKIE: " + cookie.toExternalForm() + " (domain=" + cookie.getDomain() + " : path=" + cookie.getPath() + ")");
+                    cookies.add("REQUEST COOKIE: " + cookie.toExternalForm() + " (domain=" + cookie.getDomain()
+                            + " : path=" + cookie.getPath() + ")");
                 }
             }
             request.logRequest(uri, requestBody, method.getName(), request.getHeaderInformation(), cookies, false);
@@ -258,10 +253,13 @@ public class TankHttpClient3 implements TankHttpClient {
                 }
             }
             long endTime = System.currentTimeMillis();
-            processResponse(responseBody, startTime, endTime, request, method.getStatusText(), method.getStatusCode(), method.getResponseHeaders(), httpclient.getState());
+            processResponse(responseBody, startTime, endTime, request, method.getStatusText(), method.getStatusCode(),
+                    method.getResponseHeaders(), httpclient.getState());
             waitTime = endTime - startTime;
         } catch (Exception ex) {
-            logger.error(request.getLogUtil().getLogMessage("Could not do " + method.getName() + " to url " + uri + " |  error: " + ex.toString(), LogEventType.IO), ex);
+            logger.error(request.getLogUtil().getLogMessage(
+                    "Could not do " + method.getName() + " to url " + uri + " |  error: " + ex.toString(),
+                    LogEventType.IO), ex);
             throw new RuntimeException(ex);
         } finally {
             try {
@@ -269,9 +267,12 @@ public class TankHttpClient3 implements TankHttpClient {
             } catch (Exception e) {
                 logger.warn("Could not release connection: " + e, e);
             }
-            if (method.getName().equalsIgnoreCase("post") && request.getLogUtil().getAgentConfig().getLogPostResponse()) {
+            if (method.getName().equalsIgnoreCase("post")
+                    && request.getLogUtil().getAgentConfig().getLogPostResponse()) {
                 logger.info(request.getLogUtil().getLogMessage(
-                        "Response from POST to " + request.getRequestUrl() + " got status code " + request.getResponse().getHttpCode() + " BODY { " + request.getResponse().getBody() + " }",
+                        "Response from POST to " + request.getRequestUrl() + " got status code "
+                                + request.getResponse().getHttpCode() + " BODY { " + request.getResponse().getBody()
+                                + " }",
                         LogEventType.Informational));
             }
         }
@@ -281,14 +282,12 @@ public class TankHttpClient3 implements TankHttpClient {
     }
 
     /**
-     * Wait for the amount of time it took to get a response from the system if
-     * the response time is over some threshold specified in the properties
-     * file. This will ensure users don't bunch up together after a blip on the
-     * system under test
+     * Wait for the amount of time it took to get a response from the system if the response time is over some threshold
+     * specified in the properties file. This will ensure users don't bunch up together after a blip on the system under
+     * test
      * 
      * @param responseTime
-     *            - response time of the request; this will also be the time to
-     *            sleep
+     *            - response time of the request; this will also be the time to sleep
      * @param uri
      */
     private void doWaitDueToLongResponse(BaseRequest request, long responseTime, String uri) {
@@ -297,7 +296,8 @@ public class TankHttpClient3 implements TankHttpClient {
             long maxAgentResponseTime = config.getMaxAgentResponseTime();
             if (maxAgentResponseTime < responseTime) {
                 long waitTime = Math.min(config.getMaxAgentWaitTime(), responseTime);
-                logger.warn(request.getLogUtil().getLogMessage("Response time to slow | delaying " + waitTime + " ms | url --> " + uri, LogEventType.Script));
+                logger.warn(request.getLogUtil().getLogMessage(
+                        "Response time to slow | delaying " + waitTime + " ms | url --> " + uri, LogEventType.Script));
                 Thread.sleep(waitTime);
             }
         } catch (InterruptedException e) {
@@ -308,7 +308,8 @@ public class TankHttpClient3 implements TankHttpClient {
     /**
      * Process the response data
      */
-    private void processResponse(byte[] bResponse, long startTime, long endTime, BaseRequest request, String message, int httpCode, Header[] headers, HttpState httpstate) {
+    private void processResponse(byte[] bResponse, long startTime, long endTime, BaseRequest request, String message,
+            int httpCode, Header[] headers, HttpState httpstate) {
         BaseResponse response = request.getResponse();
         try {
             if (response == null) {
@@ -342,7 +343,8 @@ public class TankHttpClient3 implements TankHttpClient {
             response.setResponseTime(endTime - startTime);
             String contentType = response.getHttpHeader("Content-Type");
             String contentEncode = response.getHttpHeader("Content-Encoding");
-            if (BaseResponse.isDataType(contentType) && contentEncode != null && contentEncode.toLowerCase().contains("gzip")) {
+            if (BaseResponse.isDataType(contentType) && contentEncode != null
+                    && contentEncode.toLowerCase().contains("gzip")) {
                 // decode gzip for data types
                 try {
                     GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(bResponse));
@@ -350,7 +352,8 @@ public class TankHttpClient3 implements TankHttpClient {
                     IOUtils.copy(in, out);
                     bResponse = out.toByteArray();
                 } catch (Exception e) {
-                    logger.warn(request.getLogUtil().getLogMessage("cannot decode gzip stream: " + e, LogEventType.System));
+                    logger.warn(
+                            request.getLogUtil().getLogMessage("cannot decode gzip stream: " + e, LogEventType.System));
                 }
             }
             response.setResponseBody(bResponse);
@@ -378,11 +381,10 @@ public class TankHttpClient3 implements TankHttpClient {
                 method.setRequestHeader((String) mapEntry.getKey(), (String) mapEntry.getValue());
             }
         } catch (Exception ex) {
-            logger.warn(request.getLogUtil().getLogMessage("Unable to set header: " + ex.getMessage(), LogEventType.System));
+            logger.warn(request.getLogUtil().getLogMessage("Unable to set header: " + ex.getMessage(),
+                    LogEventType.System));
         }
     }
-
-    
 
     private List<Part> buildParts(BaseRequest request) {
         List<Part> parts = new ArrayList<Part>();
@@ -404,7 +406,5 @@ public class TankHttpClient3 implements TankHttpClient {
         }
         return parts;
     }
-
-   
 
 }

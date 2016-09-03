@@ -47,6 +47,7 @@ public interface ProjectService {
 
     public static final String METHOD_DELETE = "/delete";
     public static final String METHOD_SCRIPT = "/script";
+    public static final String METHOD_PROJECT = "/project";
     public static final String METHOD_PROJECT_SCRIPT = "/script/project";
     public static final String METHOD_SCRIPT_DOWNLOAD = "/download/script";
     public static final String METHOD_PROJECT_SCRIPT_DOWNLOAD = "/download/script/project";
@@ -78,6 +79,19 @@ public interface ProjectService {
     @DELETE
     @Nonnull
     public Response deleteProject(@PathParam("projectId") int projectId);
+
+    /**
+     * Gets The specified project.
+     * 
+     * @param projectId
+     *            the id of the project to get.
+     * @return Response containing a the projectTo or and 400 (bad request) if id cannot be found.
+     */
+    @Path(ProjectService.METHOD_PROJECT + "/{projectId}")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    @GET
+    @Nonnull
+    public Response getProject(@PathParam("projectId") int projectId);
 
     /**
      * Gets a list of all projects in the system.
@@ -131,7 +145,7 @@ public interface ProjectService {
 
     @Path(METHOD_RUN + "/{projectId}")
     @Produces({ MediaType.TEXT_PLAIN })
-    @GET
+    @POST
     public Response runProject(
             @PathParam("projectId") Integer projectId);
 
