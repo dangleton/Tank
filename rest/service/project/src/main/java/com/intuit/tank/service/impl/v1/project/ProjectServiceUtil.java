@@ -19,8 +19,9 @@ package com.intuit.tank.service.impl.v1.project;
 import java.io.File;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.api.model.v1.project.KeyPair;
 import com.intuit.tank.api.model.v1.project.ProjectTO;
@@ -31,6 +32,7 @@ import com.intuit.tank.perfManager.workLoads.util.WorkloadScriptUtil;
 import com.intuit.tank.project.JobConfiguration;
 import com.intuit.tank.project.JobInstance;
 import com.intuit.tank.project.Project;
+import com.intuit.tank.project.ProjectDTO;
 import com.intuit.tank.project.Workload;
 
 /**
@@ -41,7 +43,7 @@ import com.intuit.tank.project.Workload;
  */
 public class ProjectServiceUtil {
 
-    private static final Logger LOG = Logger.getLogger(ProjectServiceUtil.class);
+    private static final Logger LOG = LogManager.getLogger(ProjectServiceUtil.class);
 
     private ProjectServiceUtil() {
 
@@ -96,6 +98,7 @@ public class ProjectServiceUtil {
     public static String getScriptString(JobInstance job) {
         WorkloadDao dao = new WorkloadDao();
         Workload workload = dao.findById(job.getWorkloadId());
+        workload.getTestPlans();
         dao.loadScriptsForWorkload(workload);
         return WorkloadScriptUtil.getScriptForWorkload(workload, job);
     }

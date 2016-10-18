@@ -31,14 +31,15 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -61,7 +62,8 @@ import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.http.AuthCredentials;
 import com.intuit.tank.http.AuthScheme;
@@ -76,7 +78,7 @@ import com.intuit.tank.vm.settings.AgentConfig;
 
 public class TankHttpClient4 implements TankHttpClient {
 
-    static Logger LOG = Logger.getLogger(TankHttpClient4.class);
+    static Logger LOG = LogManager.getLogger(TankHttpClient4.class);
 
     private CloseableHttpClient httpclient;
     private HttpClientContext context;
@@ -100,9 +102,19 @@ public class TankHttpClient4 implements TankHttpClient {
             LOG.error("Error setting accept all: " + e, e);
         }
 
+<<<<<<< HEAD
         
         httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy()).build();
         requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000).setCircularRedirectsAllowed(true).setAuthenticationEnabled(true).setRedirectsEnabled(true)
+=======
+        httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+        requestConfig = RequestConfig.custom().setSocketTimeout(30000)
+        		.setConnectTimeout(30000)
+        		.setCircularRedirectsAllowed(true)
+        		.setAuthenticationEnabled(true)
+        		.setRedirectsEnabled(true)
+        		.setCookieSpec(CookieSpecs.DEFAULT)
+>>>>>>> upstream/master
                 .setMaxRedirects(100).build();
         
         // Make sure the same context is used to execute logically related
@@ -115,8 +127,13 @@ public class TankHttpClient4 implements TankHttpClient {
 
 
     public void setConnectionTimeout(long connectionTimeout) {
-        requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout((int) connectionTimeout).setCircularRedirectsAllowed(true).setAuthenticationEnabled(true)
-                .setRedirectsEnabled(true).setMaxRedirects(100).build();
+        requestConfig = RequestConfig.custom().setSocketTimeout(30000)
+        		.setConnectTimeout((int) connectionTimeout)
+        		.setCircularRedirectsAllowed(true)
+        		.setAuthenticationEnabled(true)
+                .setRedirectsEnabled(true)
+                .setCookieSpec(CookieSpecs.DEFAULT)
+                .setMaxRedirects(100).build();
         context.setRequestConfig(requestConfig);
     }
 

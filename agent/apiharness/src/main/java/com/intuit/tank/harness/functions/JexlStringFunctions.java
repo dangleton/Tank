@@ -27,11 +27,13 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
+import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.jexl2.JexlContext;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.harness.APITestHarness;
 import com.intuit.tank.harness.logging.LogUtil;
@@ -49,8 +51,7 @@ import com.intuit.tank.vm.common.util.ExpressionContextVisitor;
 
 public class JexlStringFunctions implements ExpressionContextVisitor {
 
-    private static final Logger LOG = Logger
-            .getLogger(JexlStringFunctions.class);
+    private static final Logger LOG = LogManager.getLogger(JexlStringFunctions.class);
 
     /**
      * Preset values
@@ -556,4 +557,18 @@ public class JexlStringFunctions implements ExpressionContextVisitor {
         }
         return toDecode;
     }
+    
+    /**
+     * UUID random generator
+     * 
+     * @return the new UUID string
+     */
+    public String getUUID(){
+        //generate random UUIDs
+        return UUID.randomUUID().toString();
+      }
+     
+      private static void log(Object aObject){
+        System.out.println( String.valueOf(aObject) );
+      }
 }

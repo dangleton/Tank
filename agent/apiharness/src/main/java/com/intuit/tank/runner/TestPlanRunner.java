@@ -17,8 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.harness.APITestHarness;
 import com.intuit.tank.harness.FlowController;
@@ -53,7 +54,7 @@ import com.intuit.tank.vm.settings.TankConfig;
 
 public class TestPlanRunner implements Runnable {
 
-    static Logger LOG = Logger.getLogger(TestPlanRunner.class);
+    static Logger LOG = LogManager.getLogger(TestPlanRunner.class);
     private Variables variables;
     private TimerMap timerMap;
     private String uniqueName;
@@ -160,9 +161,10 @@ public class TestPlanRunner implements Runnable {
                         LOG.info("finished or Stop set to test or less, exiting at test...");
                         return;
                     }
+                    i = 0;
                     loopCount++;
                     LOG.info(LogUtil.getLogMessage("Test for test plan " + testPlan.getTestPlanName()
-                            + " has finished and is now looping on last script for the "
+                            + " has finished and is now starting over for the  "
                             + loopCount + " time"));
                 }
             }
@@ -183,7 +185,7 @@ public class TestPlanRunner implements Runnable {
             for (HDScript hdscript : scripts) {
                 MethodTimer mt1 = new MethodTimer(LOG, getClass(), "runScript(" + hdscript.getName() + ")");
                 logEvent.setScript(hdscript);
-                LOG.info(LogUtil.getLogMessage("Entering Script", LogEventType.Informational));
+                //LOG.info(LogUtil.getLogMessage("Entering Script", LogEventType.Informational));
                 hdscript.setParent(parent);
                 int scriptLoop = 0;
                 APITestHarness.getInstance().getUserTracker().add(hdscript.getName());

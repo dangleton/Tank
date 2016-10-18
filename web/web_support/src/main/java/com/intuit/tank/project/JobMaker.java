@@ -14,11 +14,9 @@ package com.intuit.tank.project;
  */
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.context.ConversationScoped;
@@ -26,22 +24,30 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.jboss.seam.international.status.Messages;
-import org.jboss.seam.security.Identity;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import com.intuit.tank.util.Messages;
 
 import com.intuit.tank.PreferencesBean;
 import com.intuit.tank.ProjectBean;
-import com.intuit.tank.auth.TankUser;
 import com.intuit.tank.dao.BaseDao;
 import com.intuit.tank.dao.DataFileDao;
-import com.intuit.tank.dao.JobInstanceDao;
 import com.intuit.tank.dao.JobNotificationDao;
 import com.intuit.tank.dao.JobQueueDao;
 import com.intuit.tank.dao.JobRegionDao;
 import com.intuit.tank.dao.WorkloadDao;
 import com.intuit.tank.dao.util.ProjectDaoUtil;
 import com.intuit.tank.perfManager.workLoads.util.WorkloadScriptUtil;
+import com.intuit.tank.project.BaseEntity;
+import com.intuit.tank.project.DataFile;
+import com.intuit.tank.project.EntityVersion;
+import com.intuit.tank.project.JobInstance;
+import com.intuit.tank.project.JobQueue;
+import com.intuit.tank.project.JobRegion;
+import com.intuit.tank.project.ScriptGroup;
+import com.intuit.tank.project.TestPlan;
+import com.intuit.tank.project.Workload;
 import com.intuit.tank.qualifier.Modified;
 import com.intuit.tank.util.TestParamUtil;
 import com.intuit.tank.util.TestParameterContainer;
@@ -57,14 +63,10 @@ import com.intuit.tank.vm.settings.VmInstanceType;
 public class JobMaker implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(JobMaker.class);
+    private static final Logger LOG = LogManager.getLogger(JobMaker.class);
 
-    @Inject
     private ProjectBean projectBean;
-
-    @Inject
-    private Identity identity;
-
+    
     private String name;
 
     private String submitInfo;
@@ -93,10 +95,10 @@ public class JobMaker implements Serializable {
      * 
      */
     public JobMaker() {
-
     }
 
-    public void init() {
+    public void init(ProjectBean projectBean) {
+    	this.projectBean = projectBean;
     }
 
     /**
@@ -106,7 +108,6 @@ public class JobMaker implements Serializable {
     public String getTankClientClass() {
         return projectBean.getJobConfiguration().getTankClientClass();
     }
-
     /**
      * 
      * @return
@@ -122,7 +123,7 @@ public class JobMaker implements Serializable {
     public String getLoggingProfile() {
         return projectBean.getJobConfiguration().getLoggingProfile();
     }
-
+    
     /**
      * 
      * @param loggingProfile
@@ -201,7 +202,7 @@ public class JobMaker implements Serializable {
      * @return
      */
     public void setVmInstanceType(String type) {
-        if (type != null) {
+        if (StringUtils.isNotEmpty(type)) {
             if (!type.equals(getVmInstanceType())) {
                 setNumUsersPerAgent(getDefaultNumUsers(type));
             }
@@ -237,7 +238,7 @@ public class JobMaker implements Serializable {
             projectBean.getJobConfiguration().setNumUsersPerAgent(numUsers);
         }
     }
-
+    
     /**
      * 
      * @return
@@ -245,13 +246,13 @@ public class JobMaker implements Serializable {
     public boolean isUseEips() {
         return projectBean.getJobConfiguration().isUseEips();
     }
-
+    
     /**
      * 
      * @return
      */
     public void setUseEips(boolean b) {
-        projectBean.getJobConfiguration().setUseEips(b);
+            projectBean.getJobConfiguration().setUseEips(b);
     }
 
     /**
@@ -324,7 +325,7 @@ public class JobMaker implements Serializable {
             }
             TestParameterContainer times = TestParamUtil.evaluateTestTimes(maxDuration, projectBean
                     .getJobConfiguration().getRampTimeExpression(), projectBean.getJobConfiguration()
-                            .getSimulationTimeExpression());
+                    .getSimulationTimeExpression());
             proposedJobInstance.setExecutionTime(maxDuration);
             proposedJobInstance.setRampTime(times.getRampTime());
             proposedJobInstance.setSimulationTime(times.getSimulationTime());
@@ -355,8 +356,7 @@ public class JobMaker implements Serializable {
             Workload workload = projectBean.getWorkload();
             JobValidator validator = new JobValidator(workload.getTestPlans(), proposedJobInstance.getVariables(),
                     false);
-            ret = JobDetailFormatter.createJobDetails(validator, workload, proposedJobInstance,
-                    ((TankUser) identity.getUser()).getUserEntity().getGroups());
+            ret = JobDetailFormatter.createJobDetails(validator, workload, proposedJobInstance);
         } else {
             ret = "Job is incomplete.";
         }
@@ -372,14 +372,10 @@ public class JobMaker implements Serializable {
             JobQueue queue = jobQueueDao.findOrCreateForProjectId(projectBean.getProject().getId());
             proposedJobInstance.setJobDetails(jobDetails);
             mt.markAndLog("Create Job Details");
-            JobInstanceDao jobInstanceDao = new JobInstanceDao();
-            proposedJobInstance = jobInstanceDao.saveOrUpdate(proposedJobInstance);
             queue.addJob(proposedJobInstance);
-
             mt.markAndLog("Add job to queue");
             jobQueueDao.saveOrUpdate(queue);
             mt.markAndLog("save queue");
-
             storeScript(Integer.toString(proposedJobInstance.getId()), workload, proposedJobInstance);
             mt.markAndLog("store script");
             messages.info("Job has been submitted successfully");
@@ -428,37 +424,7 @@ public class JobMaker implements Serializable {
         if (userPercentage != 100) {
             return false;
         }
-        int numAgents = getNumAgents(proposedJobInstance.getJobRegionVersions());
-        // check if user can launch numUsers
-        Set<com.intuit.tank.project.Group> groups = ((TankUser)identity.getUser()).getUserEntity().getGroups();
-        if (!JobValidator.canLaunchInstances(numAgents, groups)) {
-            return false;
-        }
         return hasScripts();
-    }
-
-    private int getNumAgents(Set<EntityVersion> jobRegionVersions) {
-        JobRegionDao jrd = new JobRegionDao();
-        List<JobRegion> regions = new ArrayList<JobRegion>();
-        for (EntityVersion ver : proposedJobInstance.getJobRegionVersions()) {
-            JobRegion region = jrd.findById(ver.getObjectId());
-            if (region != null) {
-                long users = TestParamUtil.evaluateExpression(region.getUsers(),
-                        proposedJobInstance.getExecutionTime(),
-                        proposedJobInstance.getSimulationTime(), proposedJobInstance.getRampTime());
-                if (users > 0) {
-                    regions.add(new JobRegion(region.getRegion(), Long.toString(users)));
-                }
-            }
-        }
-        int numMachines = 0;
-        for (JobRegion region : regions) {
-            int users = Integer.parseInt(region.getUsers());
-            if (users > 0) {
-                numMachines += (int) Math.ceil((double) users / (double) proposedJobInstance.getNumUsersPerAgent());
-            }
-        }
-        return numMachines;
     }
 
     private boolean hasScripts() {

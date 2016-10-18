@@ -19,15 +19,17 @@ package com.intuit.tank.auth;
 import java.io.Serializable;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Event;
-import javax.faces.bean.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
-import org.jboss.seam.international.status.Messages;
-import org.jboss.seam.security.Identity;
+import com.intuit.tank.util.Messages;
+import org.picketlink.Identity;
 
 import com.intuit.tank.admin.Deleted;
 import com.intuit.tank.dao.PreferencesDao;
@@ -43,10 +45,10 @@ import com.intuit.tank.vm.common.PasswordEncoder;
  * 
  */
 @Named
-@ViewScoped
+@RequestScoped
 public class AccountModify implements Serializable {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(AccountModify.class);
+    private static final Logger LOG = LogManager.getLogger(AccountModify.class);
     private static final long serialVersionUID = 1L;
 
     @Inject
@@ -70,7 +72,7 @@ public class AccountModify implements Serializable {
         try {
             if (identity.isLoggedIn()) {
                 UserDao userDao = new UserDao();
-                user = userDao.findById(Integer.parseInt(identity.getUser().getKey()));
+                user = userDao.findById(Integer.parseInt(identity.getAccount().getId()));
             }
         } catch (Exception e) {
             LOG.error("Error getting user: " + e, e);

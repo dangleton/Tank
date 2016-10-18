@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.http.BaseRequest;
 import com.intuit.tank.reporting.api.TPSInfo;
@@ -32,7 +32,8 @@ import com.intuit.tank.vm.settings.TimeUtil;
 
 public class TPSMonitor {
 
-    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(TPSMonitor.class);
+    @SuppressWarnings("unused")
+    private static Logger LOG = LogManager.getLogger(TPSMonitor.class);
 
     private int period;
 
@@ -56,7 +57,6 @@ public class TPSMonitor {
     public TPSInfoContainer getTPSInfo() {
         TPSInfoContainer ret = null;
         if (isEnabled()) {
-            List<TPSInfo> retList = new ArrayList<TPSInfo>();
             long now = TimeUtil.normalizeToPeriod(period, new Date()).getTime();
             long min = now;
             long max = 0;
@@ -65,7 +65,7 @@ public class TPSMonitor {
             List<Counter> subList = new ArrayList<TPSMonitor.Counter>(counters);
             for (Counter counter : subList) {
                 long entryTime = counter.time;
-                if (now > (entryTime + (period * 2000))) {
+                if (now > (entryTime + (period * 4))) {
                     min = Math.min(min, entryTime);
                     max = Math.max(max, entryTime);
                     Map<String, Integer> map = tpsMap.get(counter.time);
@@ -83,28 +83,24 @@ public class TPSMonitor {
                 }
             }
             if (!toRemove.isEmpty()) {
-                LOG.info("about to remove " + toRemove.size() + " counters from list resulted in with " + counters.size() + " left");
-                boolean removed = counters.removeAll(toRemove);
-                LOG.info("removed " + toRemove.size() + " counters from list resulted in " + removed + " have " + counters.size() + " left");
+                counters.removeAll(toRemove);
             }
             for (Entry<Long, Map<String, Integer>> entry : tpsMap.entrySet()) {
                 for (Entry<String, Integer> valueEntry : entry.getValue().entrySet()) {
                     TPSInfo info = new TPSInfo(new Date(entry.getKey()), valueEntry.getKey(), valueEntry.getValue()
                             .intValue(), period);
                     infoList.add(info);
-                    retList.add(info);
                 }
             }
             if (max == 0) { // no data yet
-                ret = new TPSInfoContainer(new Date(min), new Date(min), period, retList);
+                ret = new TPSInfoContainer(new Date(min), new Date(min), period, infoList);
             } else {
                 if (minDate == null) {
                     minDate = new Date(min);
                 }
-                ret = new TPSInfoContainer(new Date(min), new Date(max), period, retList);
+                ret = new TPSInfoContainer(minDate, new Date(max), period, infoList);
             }
         }
-        LOG.info("returning Container with " + ret.getTpsInfos().size() + " infos and min of " + ret.getMinTime() + " and max of " + ret.getMaxTime());
         return ret;
     }
 
@@ -133,16 +129,6 @@ public class TPSMonitor {
             super();
             this.key = key;
             this.time = date.getTime();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return EqualsBuilder.reflectionEquals(this, obj);
-        }
-
-        @Override
-        public int hashCode() {
-            return HashCodeBuilder.reflectionHashCode(this);
         }
 
     }

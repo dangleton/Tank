@@ -23,19 +23,22 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.Conversation;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.jboss.seam.faces.context.conversation.Begin;
-import org.jboss.seam.faces.context.conversation.End;
-import org.jboss.seam.international.status.Messages;
-import org.jboss.seam.security.Identity;
+import com.intuit.tank.util.Messages;
+import org.picketlink.Identity;
+import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.model.basic.User;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -65,7 +68,7 @@ import com.intuit.tank.vm.settings.AccessRight;
 public class ScriptEditor implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(ScriptEditor.class);
+    private static Logger LOG = LogManager.getLogger(ScriptEditor.class);
 
     private Script script;
 
@@ -106,8 +109,15 @@ public class ScriptEditor implements Serializable {
 
     @Inject
     private Identity identity;
+    
+    @Inject
+    private IdentityManager identityManager;
+    
     @Inject
     private Security security;
+    
+    @Inject
+    private Conversation conversation;
 
     @Inject
     @Modified
@@ -257,8 +267,8 @@ public class ScriptEditor implements Serializable {
      * 
      * @param script
      */
-    @Begin
     public String editScript(Script s) {
+    	conversation.begin();
         this.script = new ScriptDao().findById(s.getId());
         ScriptUtil.setScriptStepLabels(script);
         steps = script.getScriptSteps();
@@ -269,8 +279,8 @@ public class ScriptEditor implements Serializable {
         return "success";
     }
 
-    @End
     public String cancel() {
+    	conversation.end();
         this.script = null;
         return "success";
     }
@@ -500,8 +510,9 @@ public class ScriptEditor implements Serializable {
             if (originalName.equals(saveAsName)) {
                 save();
             } else {
-                Script copyScript = ScriptUtil.copyScript(identity.getUser()
-                        .getId(), saveAsName, script);
+                Script copyScript = ScriptUtil.copyScript(
+                		identityManager.lookupById(User.class, identity.getAccount().getId()).getLoginName()
+                		, saveAsName, script);
                 copyScript = new ScriptDao().saveOrUpdate(copyScript);
                 scriptEvent.fire(new ModifiedScriptMessage(copyScript, this));
                 messages.info("Script " + originalName + " has been saved as "

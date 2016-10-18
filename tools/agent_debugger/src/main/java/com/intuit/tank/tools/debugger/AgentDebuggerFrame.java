@@ -58,11 +58,10 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rtextarea.GutterIconInfo;
@@ -79,6 +78,7 @@ import com.intuit.tank.harness.data.HDScriptGroup;
 import com.intuit.tank.harness.data.HDScriptUseCase;
 import com.intuit.tank.harness.data.HDTestPlan;
 import com.intuit.tank.harness.data.HDTestVariables;
+import com.intuit.tank.harness.data.HDVariable;
 import com.intuit.tank.harness.data.HDWorkload;
 import com.intuit.tank.harness.data.Header;
 import com.intuit.tank.harness.data.RequestStep;
@@ -102,7 +102,7 @@ import com.intuit.tank.vm.common.TankConstants;
 public class AgentDebuggerFrame extends JFrame {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger LOG = Logger.getLogger(AgentDebuggerFrame.class);
+    private static final Logger LOG = LogManager.getLogger(AgentDebuggerFrame.class);
 
     private RSyntaxTextArea scriptEditorTA;
     private RTextScrollPane scriptEditorScrollPane;
@@ -110,7 +110,7 @@ public class AgentDebuggerFrame extends JFrame {
     private ActionProducer debuggerActions;
     private HDWorkload currentWorkload;
     private HDTestPlan currentTestPlan;
-    private JComboBox testPlanChooser;
+    private JComboBox<HDTestPlan> testPlanChooser;
     private JComboBox<TankClientChoice> tankClientChooser;
     private List<StepListener> stepChangedListeners = new ArrayList<StepListener>();
     private List<ScriptChangedListener> scriptChangedListeners = new ArrayList<ScriptChangedListener>();
@@ -546,8 +546,12 @@ public class AgentDebuggerFrame extends JFrame {
         setCurrentTestPlan(null);
         this.currentWorkload = currentWorkload;
         if (currentWorkload != null) {
+<<<<<<< HEAD
             DefaultComboBoxModel model = new DefaultComboBoxModel(
                     currentWorkload.getPlans().toArray(new HDTestPlan[currentWorkload.getPlans().size()]));
+=======
+            DefaultComboBoxModel<HDTestPlan> model = new DefaultComboBoxModel<HDTestPlan>(currentWorkload.getPlans().toArray(new HDTestPlan[currentWorkload.getPlans().size()]));
+>>>>>>> upstream/master
             if (currentWorkload.getPlans().size() > 0) {
                 setCurrentTestPlan(currentWorkload.getPlans().get(0));
                 model.setSelectedItem(currentTestPlan);
@@ -555,7 +559,7 @@ public class AgentDebuggerFrame extends JFrame {
             testPlanChooser.setModel(model);
         } else {
             setCurrentTestPlan(null);
-            testPlanChooser.setModel(new DefaultComboBoxModel());
+            testPlanChooser.setModel(new DefaultComboBoxModel<HDTestPlan>());
         }
     }
 
@@ -1014,7 +1018,7 @@ public class AgentDebuggerFrame extends JFrame {
         if (args.length > 0) {
             url = args[0];
         }
-        Properties props = new Properties();
+/*        Properties props = new Properties();
         try {
             InputStream configStream = AgentDebuggerFrame.class.getResourceAsStream("/log4j.properties");
             props.load(configStream);
@@ -1025,7 +1029,7 @@ public class AgentDebuggerFrame extends JFrame {
         props.setProperty("log4j.appender.agent.File", "debugger.log");
         LogManager.resetConfiguration();
         PropertyConfigurator.configure(props);
-
+*/
         new AgentDebuggerFrame(true, url).setVisible(true);
     }
 

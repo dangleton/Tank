@@ -18,7 +18,11 @@ package com.intuit.tank.dao;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.project.Script;
 import com.intuit.tank.project.ScriptGroup;
@@ -34,7 +38,7 @@ import com.intuit.tank.project.Workload;
  */
 public class WorkloadDao extends BaseDao<Workload> {
     @SuppressWarnings("unused")
-    private static final Logger LOG = Logger.getLogger(WorkloadDao.class);
+    private static final Logger LOG = LogManager.getLogger(WorkloadDao.class);
 
     /**
      * @param entityClass
@@ -42,6 +46,39 @@ public class WorkloadDao extends BaseDao<Workload> {
     public WorkloadDao() {
         super();
         setReloadEntities(true);
+    }
+    
+    
+    /**
+     * This is an override of the BaseEntity to initiate eager loading when needed.
+     * 
+     * @param id
+     *            the primary key
+     * @return the entity or null
+     */
+    @Nullable
+    @Override
+    public Workload findById(@Nonnull Integer id) {
+    	Workload workload = null;
+    	try {
+   		begin();
+    		workload = getEntityManager().find(Workload.class, id);
+    		if(workload != null) {
+    			workload.getJobConfiguration();
+    			for ( TestPlan tp : workload.getTestPlans() ) {
+    				for (ScriptGroup sg : tp.getScriptGroups() ) {
+    					sg.getScriptGroupSteps();
+    				}
+    			}
+    		}
+    		commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+		} finally {
+			cleanup();
+		}
+		return workload;
     }
 
     public Workload loadScriptsForWorkload(Workload workload) {

@@ -27,9 +27,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.envers.AuditMappedBy;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.Length;
@@ -61,13 +61,13 @@ public class Workload extends BaseEntity {
     @Length(max = 255)
     private String name;// name
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "workload_id", referencedColumnName = "id")
     @OrderColumn(name = "position")
     @AuditMappedBy(mappedBy = "workload", positionMappedBy = "position")
     private List<TestPlan> testPlans = new ArrayList<TestPlan>();
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "job_configuration_id")
     private JobConfiguration jobConfiguration = new JobConfiguration();
 

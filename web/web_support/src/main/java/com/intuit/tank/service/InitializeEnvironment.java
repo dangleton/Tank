@@ -16,13 +16,19 @@ package com.intuit.tank.service;
  * #L%
  */
 
+import java.util.Collection;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.inject.Named;
 
-import org.apache.log4j.Logger;
-import org.jboss.seam.servlet.WebApplication;
-import org.jboss.seam.servlet.event.Initialized;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.picketlink.event.PartitionManagerCreateEvent;
+import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.PartitionManager;
 
 import com.intuit.tank.dao.GroupDao;
 import com.intuit.tank.dao.UserDao;
@@ -38,33 +44,34 @@ import com.intuit.tank.vm.settings.TankConfig;
  * @author dangleton
  * 
  */
-@Named
+@Singleton
+@Startup
 public class InitializeEnvironment {
-    private static final Logger LOG = Logger.getLogger(InitializeEnvironment.class);
+    private static final Logger LOG = LogManager.getLogger(InitializeEnvironment.class);
 
-    @Inject
     private TankConfig tankConfig;
+    
+    @Inject
+    private PartitionManager partitionManager;
+    
+    private IdentityManager identityManager;
+    
+    boolean initialize = false;
 
-    // @Inject
-    // private HttpConversationContext conversationContext;
-
-    public String initialize(@Observes @Initialized WebApplication webapp) {
-        // conversationContext.setDefaultTimeout(60 * 60 * 1000);//one hour
-        return initData();
-    }
-
-    public String initData() {
-        StringBuilder sb = new StringBuilder();
-        createDefaultGroups(sb);
-        createDefaultUsers(sb);
-        return sb.toString();
+    @PostConstruct
+    public void init() {
+    	identityManager = this.partitionManager.createIdentityManager();
+    	tankConfig = new TankConfig();
+        createDefaultGroups();
+        createDefaultUsers();
+        initialize = true;
     }
 
     /**
      * @param sb
      * @return
      */
-    private void createDefaultUsers(StringBuilder sb) {
+    private void createDefaultUsers() {
         UserDao dao = new UserDao();
         GroupDao groupDao = new GroupDao();
         for (DefaultUser newUser : tankConfig.getSecurityConfig().getDefaultUsers()) {
@@ -84,7 +91,6 @@ public class InitializeEnvironment {
                     }
                     dao.saveOrUpdate(user);
                     LOG.info("Created user " + user.getName());
-                    sb.append("Created user " + user.getName() + "<br/>");
                 } catch (Exception e) {
                     LOG.info("Error creating user: " + e, e);
                 }
@@ -96,15 +102,18 @@ public class InitializeEnvironment {
      * @param sb
      * @return
      */
-    private void createDefaultGroups(StringBuilder sb) {
+    private void createDefaultGroups() {
         GroupDao groupDao = new GroupDao();
         for (String g : tankConfig.getSecurityConfig().getGroups()) {
             try {
                 Group group = groupDao.findByName(g);
                 if (group == null) {
                     groupDao.saveOrUpdate(new Group(g));
-                    sb.append("Created Group " + g + "<br/>");
                     LOG.info("Created Group " + g);
+                } else {
+                    identityManager.add(new org.picketlink.idm.model.basic.Role(g));
+//                    identityManager.add(new org.picketlink.idm.model.basic.Group(g));
+                    LOG.info("Initialized Role " + g);
                 }
             } catch (Exception e) {
                 LOG.error("Error creating default Group: " + e, e);

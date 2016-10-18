@@ -17,13 +17,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Event;
-import javax.faces.bean.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jboss.seam.international.status.Messages;
-import org.jboss.seam.security.Identity;
+import com.intuit.tank.util.Messages;
+import org.picketlink.Identity;
+import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.model.basic.User;
 
 import com.intuit.tank.ModifiedProjectMessage;
 import com.intuit.tank.ProjectBean;
@@ -39,13 +41,17 @@ import com.intuit.tank.vm.api.enumerated.ScriptDriver;
 import com.intuit.tank.vm.settings.AccessRight;
 
 @Named
-@ViewScoped
+@RequestScoped
 public class CreateProjectBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Inject
     private Identity identity;
+	
+    @Inject 
+    private IdentityManager identityManager;
+    
     @Inject
     private Security security;
 
@@ -147,7 +153,7 @@ public class CreateProjectBean implements Serializable {
         project.setScriptDriver(ScriptDriver.valueOf(scriptDriver));
         project.setComments(getComments());
         project.setProductName(getProductName());
-        project.setCreator(identity.getUser().getId());
+        project.setCreator(identityManager.lookupById(User.class, identity.getAccount().getId()).getLoginName());
         try {
             project = new ProjectDao().saveOrUpdateProject(project);
             projectEvent.fire(new ModifiedProjectMessage(project, this));

@@ -18,9 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.harness.APITestHarness;
 import com.intuit.tank.harness.data.AssignmentData;
@@ -50,7 +51,7 @@ import com.intuit.tank.vm.common.util.ValidationUtil;
 
 public class RequestRunner implements Runner {
 
-    private static Logger LOG = Logger.getLogger(RequestRunner.class);
+    private static Logger LOG = LogManager.getLogger(RequestRunner.class);
 
     private String uniqueName;
     private BaseRequest baseRequest;
@@ -123,7 +124,7 @@ public class RequestRunner implements Runner {
         protocol = processProtocol(request.getProtocol());
         port = processPort(request.getPort());
         if (port == null) {
-            port = protocol.equalsIgnoreCase("https") ? "443" : "80";
+            port = "-1";
         }
 
         respFormat = StringUtils.isEmpty(response.getRespFormat()) ? "json" : response.getRespFormat();

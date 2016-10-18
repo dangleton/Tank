@@ -81,7 +81,9 @@ public class ProjectLoader extends EntityVersionLoader<Project, ModifiedProjectM
         List<Project> projects = new ProjectDao().findFiltered(ViewFilterType.ALL);
         Set<String> set = new HashSet<String>();
         for (Project p : projects) {
-            set.add(p.getCreator());
+        	if( !p.getCreator().isEmpty() ) {
+        		set.add(p.getCreator());
+        	}
         }
         List<String> list = new ArrayList<String>(set);
         Collections.sort(list);

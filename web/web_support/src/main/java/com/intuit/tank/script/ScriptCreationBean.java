@@ -19,17 +19,19 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.context.Conversation;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.jboss.seam.faces.context.conversation.Begin;
-import org.jboss.seam.faces.context.conversation.End;
-import org.jboss.seam.international.status.Messages;
-import org.jboss.seam.security.Identity;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import com.intuit.tank.util.Messages;
+import org.picketlink.Identity;
+import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.model.basic.User;
 import org.primefaces.model.UploadedFile;
 
 import com.intuit.tank.ModifiedScriptMessage;
@@ -44,7 +46,6 @@ import com.intuit.tank.project.ScriptFilterGroup;
 import com.intuit.tank.project.ScriptStep;
 import com.intuit.tank.qualifier.Modified;
 import com.intuit.tank.script.processor.ScriptProcessor;
-import com.intuit.tank.util.TsConversationManager;
 import com.intuit.tank.util.UploadedFileIterator;
 import com.intuit.tank.vm.common.util.MethodTimer;
 import com.intuit.tank.vm.exception.WatsParseException;
@@ -56,7 +57,7 @@ import com.intuit.tank.wrapper.SelectableWrapper;
 @ConversationScoped
 public class ScriptCreationBean implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(ScriptCreationBean.class);
+    private static final Logger LOG = LogManager.getLogger(ScriptCreationBean.class);
 
     private static final long serialVersionUID = 1L;
     private String name;
@@ -71,6 +72,10 @@ public class ScriptCreationBean implements Serializable {
 
     @Inject
     private Identity identity;
+    
+    @Inject
+    private IdentityManager identityManager;
+    
     @Inject
     private Security security;
 
@@ -81,13 +86,13 @@ public class ScriptCreationBean implements Serializable {
 
     @Inject
     private Messages messages;
+    
+    @Inject
+    private Conversation conversation;
 
     @Inject
     @Modified
     private Event<ModifiedScriptMessage> scriptEvent;
-
-    @Inject
-    private TsConversationManager conversationManager;
 
     /**
      * @return the productName
@@ -144,9 +149,8 @@ public class ScriptCreationBean implements Serializable {
         return groupWrappers;
     }
 
-    @End
     public void cancel() {
-
+    	conversation.end();
     }
 
     /**
@@ -195,8 +199,8 @@ public class ScriptCreationBean implements Serializable {
      * 
      * @return
      */
-    @Begin
     public String createNewScript() {
+    	conversation.begin();
         return "success";
     }
 
@@ -211,7 +215,7 @@ public class ScriptCreationBean implements Serializable {
             try {
                 Script script = new Script();
                 script.setName(getName());
-                script.setCreator(identity.getUser().getId());
+                script.setCreator(identityManager.lookupById(User.class, identity.getAccount().getId()).getLoginName());
                 script.setProductName(productName);
                 if (getCreationMode().equals("Upload Script")) {
                     UploadedFileIterator uploadedFileIterator = new UploadedFileIterator(item, "xml");
@@ -232,13 +236,12 @@ public class ScriptCreationBean implements Serializable {
                         setScriptSteps(script, steps);
                     }
                 }
-                script.setCreator(identity.getUser().getId());
-                script.setProductName(productName);
                 new ScriptDao().saveOrUpdate(script);
                 scriptEvent.fire(new ModifiedScriptMessage(script, null));
                 retVal = "success";
-                conversationManager.end();
+                conversation.end();
             } catch (Exception e) {
+            	LOG.error("Failed to create Script " + e, e);
                 messages.error(e.getMessage());
             }
         }

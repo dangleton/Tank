@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.intuit.tank.harness.APITestHarness;
 import com.intuit.tank.harness.data.HDScript;
@@ -199,8 +199,14 @@ public class LogEvent implements Serializable {
         StringBuilder sb = new StringBuilder();
         if (variables != null) {
             for (Entry<String, String> entry : variables.getVaribleValues().entrySet()) {
+<<<<<<< HEAD
                 String value = entry.getKey().toLowerCase().contains("secure") ? "*****" : entry.getValue();
                 appendField(sb, entry.getKey(), value, "=");
+=======
+            	if (!entry.getKey().toUpperCase().startsWith("UUID_")) {		// Exclude UUID variables, there are just too many.
+            		appendField(sb, entry.getKey(), entry.getValue(), "=");
+            	}
+>>>>>>> upstream/master
             }
         }
         return sb.toString();

@@ -17,15 +17,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.context.Conversation;
 import javax.enterprise.context.ConversationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.jboss.seam.faces.context.conversation.Begin;
-import org.jboss.seam.faces.context.conversation.End;
-import org.jboss.seam.international.status.Messages;
-import org.jboss.seam.security.Identity;
+import org.apache.commons.lang3.StringUtils;
+import com.intuit.tank.util.Messages;
+import org.picketlink.Identity;
+import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.model.basic.User;
 
 import com.intuit.tank.auth.Security;
 import com.intuit.tank.config.TsLoggedIn;
@@ -58,14 +59,18 @@ public class ScriptFilterCreationBean implements Serializable {
 
     @Inject
     private Identity identity;
+	
+    @Inject 
+    private IdentityManager identityManager;
+    
     @Inject
     private Security security;
 
     @Inject
     private Messages messages;
-
+    
     @Inject
-    private TsConversationManager tsConversationManager;
+    private Conversation conversation;
 
     private boolean conditionProcessed = false;
     private boolean allConditionsPass;
@@ -114,8 +119,8 @@ public class ScriptFilterCreationBean implements Serializable {
         this.filter = filter;
     }
 
-    @Begin
     public void editFilter(ScriptFilter filter) {
+    	conversation.begin();
         this.editing = true;
         this.filter = filter;
         this.setName(filter.getName());
@@ -127,11 +132,11 @@ public class ScriptFilterCreationBean implements Serializable {
         }
     }
 
-    @Begin
     public void newFilter() {
+    	conversation.begin();
         this.editing = false;
         this.filter = new ScriptFilter();
-        filter.setCreator(identity.getUser().getId());
+        filter.setCreator(identityManager.lookupById(User.class, identity.getAccount().getId()).getLoginName());
     }
 
     public void removeCondition(ScriptFilterCondition condition) {
@@ -154,7 +159,7 @@ public class ScriptFilterCreationBean implements Serializable {
                     filter.setName(name);
                     filter.setFilterType(creationMode);
                     sfDao.saveOrUpdate(filter);
-                    tsConversationManager.end();
+                    conversation.end();
                     return "success";
                 } catch (Exception e) {
                     exceptionHandler.handle(e);
@@ -168,7 +173,7 @@ public class ScriptFilterCreationBean implements Serializable {
                     filter.setExternalScriptId(selectedExternalScript);
                     filter.setFilterType(creationMode);
                     sfDao.saveOrUpdate(filter);
-                    tsConversationManager.end();
+                    conversation.end();
                     return "success";
                 } catch (Exception e) {
                     exceptionHandler.handle(e);
@@ -190,7 +195,7 @@ public class ScriptFilterCreationBean implements Serializable {
                 save();
             } else {
                 ScriptFilter copied = new ScriptFilter();
-                copied.setCreator(identity.getUser().getId());
+                copied.setCreator(identityManager.lookupById(User.class, identity.getAccount().getId()).getLoginName());
                 copied.setName(saveAsName);
                 copied.setProductName(productName);
                 copied.setAllConditionsMustPass(allConditionsPass);
@@ -221,9 +226,8 @@ public class ScriptFilterCreationBean implements Serializable {
         }
     }
 
-    @End
     public void cancel() {
-
+    	conversation.end();
     }
 
     private void validate() {

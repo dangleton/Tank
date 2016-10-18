@@ -27,12 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.bean.ViewScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.PropertyComparer;
 import com.intuit.tank.PropertyComparer.SortOrder;
@@ -55,12 +56,12 @@ import com.intuit.tank.wrapper.SelectableWrapper;
  * 
  */
 @Named
-@ViewScoped
+@RequestScoped
 public class JobReport extends SelectableBean<JobReportData> implements Serializable, Multiselectable<JobReportData> {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOG = Logger.getLogger(JobReport.class);
+    private static final Logger LOG = LogManager.getLogger(JobReport.class);
 
     private JobReportOptions jobReportOptions = new JobReportOptions();
     private List<JobReportData> results = new ArrayList<JobReportData>();

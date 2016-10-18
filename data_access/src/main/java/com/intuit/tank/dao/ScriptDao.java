@@ -22,11 +22,11 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.RecoverableException;
@@ -34,7 +34,6 @@ import org.hibernate.cfg.RecoverableException;
 import com.intuit.tank.common.ScriptUtil;
 import com.intuit.tank.project.Project;
 import com.intuit.tank.project.Script;
-import com.intuit.tank.project.ScriptGroup;
 import com.intuit.tank.project.ScriptGroupStep;
 import com.intuit.tank.project.ScriptStep;
 import com.intuit.tank.project.SerializedScriptStep;
@@ -47,7 +46,7 @@ import com.intuit.tank.vm.common.util.MethodTimer;
  * 
  */
 public class ScriptDao extends BaseDao<Script> {
-    private static final Logger LOG = Logger.getLogger(ScriptDao.class);
+    private static final Logger LOG = LogManager.getLogger(ScriptDao.class);
 
     /**
      * @param entityClass
@@ -83,8 +82,8 @@ public class ScriptDao extends BaseDao<Script> {
     @Override
     public void delete(Integer id) throws HibernateException {
         EntityManager em = getEntityManager();
-        begin();
         try {
+        	begin();
             Script entity = em.find(Script.class, id);
             if (entity != null) {
                 // check if it is used in scriptGroups
@@ -112,6 +111,11 @@ public class ScriptDao extends BaseDao<Script> {
                 em.remove(entity);
                 commit();
             }
+            commit();
+        } catch (Exception e) {
+        	rollback();
+            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             cleanup();
         }
@@ -169,12 +173,12 @@ public class ScriptDao extends BaseDao<Script> {
         // try {
         LOG.info("persisting script " + script.getName() + " with id " + script.getId()
                 + " into database");
+        EntityManager em = getEntityManager();
         try {
-            EntityManager em = getEntityManager();
-            getEmProvider().get().startTrasaction(this);
+            begin();
             SerializedScriptStep serializedScriptStep = serialize(script.getScriptSteps());
             serializedScriptStep.setSerialzedData(
-                    Hibernate.createBlob(serializedScriptStep.getBytes(), getHibernateSession()));
+                    Hibernate.getLobCreator(getHibernateSession()).createBlob(serializedScriptStep.getBytes()));
             SerializedScriptStep serializedSteps = new SerializedScriptStepDao().saveOrUpdate(serializedScriptStep);
             script.setSerializedScriptStepId(serializedScriptStep.getId());
             if (script.getId() == 0) {
@@ -183,9 +187,13 @@ public class ScriptDao extends BaseDao<Script> {
                 script = em.merge(script);
             }
             LOG.debug("Saved Script Steps with id " + serializedSteps.getId() + " for script " + script.getId());
-            getEmProvider().get().commitTransaction(this);
+            commit();
+        } catch (Exception e) {
+        	rollback();
+            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
-            getEmProvider().get().cleanup(this);
+            cleanup();
         }
         mt.markAndLog("Store script with " + size + " steps to database.");
         mt.endAndLog();

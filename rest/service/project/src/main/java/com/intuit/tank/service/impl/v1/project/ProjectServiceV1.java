@@ -40,8 +40,9 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.api.model.v1.project.ProjectContainer;
 import com.intuit.tank.api.model.v1.project.ProjectTO;
@@ -64,6 +65,7 @@ import com.intuit.tank.project.JobInstance;
 import com.intuit.tank.project.JobQueue;
 import com.intuit.tank.project.JobRegion;
 import com.intuit.tank.project.Project;
+import com.intuit.tank.project.ProjectDTO;
 import com.intuit.tank.project.Workload;
 import com.intuit.tank.service.impl.v1.cloud.JobController;
 import com.intuit.tank.service.util.ResponseUtil;
@@ -79,7 +81,7 @@ import com.intuit.tank.vm.common.util.ReportUtil;
 @Path(ProjectService.SERVICE_RELATIVE_PATH)
 public class ProjectServiceV1 implements ProjectService {
 
-    private static final Logger LOG = Logger.getLogger(ProjectServiceV1.class);
+    private static final Logger LOG = LogManager.getLogger(ProjectServiceV1.class);
 
     @Context
     private ServletContext servletContext;
@@ -168,8 +170,7 @@ public class ProjectServiceV1 implements ProjectService {
         File f = ProjectDaoUtil.getScriptFile(jobId);
         if (!f.exists()) {
             if (NumberUtils.isNumber(jobId)) {
-                JobInstanceDao dao = new JobInstanceDao();
-                JobInstance job = dao.findById(Integer.parseInt(jobId));
+                JobInstance job = new JobInstanceDao().findById(Integer.parseInt(jobId));
                 if (job == null) {
                     throw new RuntimeException("Cannot find Job with id of " + jobId);
                 }
@@ -203,14 +204,11 @@ public class ProjectServiceV1 implements ProjectService {
      */
     @Override
     public StreamingOutput getTestScriptForProject(Integer projectId) {
-        ProjectDao dao = new ProjectDao();
-        Project p = dao.findById(projectId);
+        Project p = new ProjectDao().loadScripts(projectId);
         if (p == null) {
             throw new RuntimeException("Cannot find Project with id of " + projectId);
         }
-        Workload workload = p.getWorkloads().get(0);
-        workload = new WorkloadDao().loadScriptsForWorkload(workload);
-        final String scriptString = WorkloadScriptUtil.getScriptForWorkload(workload, workload.getJobConfiguration());
+        final String scriptString = WorkloadScriptUtil.getScriptForWorkload(p.getWorkloads().get(0), p.getWorkloads().get(0).getJobConfiguration());
         return new StreamingOutput() {
             public void write(OutputStream outputStream) {
                 // Get the object of DataInputStream

@@ -13,9 +13,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.tomcat.util.http.fileupload.MultipartStream;
+import org.apache.commons.fileupload.MultipartStream;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.http.binary.BinaryResponse;
 import com.intuit.tank.http.json.JsonResponse;
@@ -27,16 +28,16 @@ import com.intuit.tank.http.xml.XMLResponse;
  */
 public class TankHttpUtil {
 
-    private static Logger LOG = Logger.getLogger(TankHttpUtil.class);
+    private static Logger LOG = LogManager.getLogger(TankHttpUtil.class);
 
     public static URL buildUrl(String protocol, String host, int port, String path, Map<String, String> urlVariables) {
 
         try {
             // no default port specified for http
             if (protocol.equalsIgnoreCase("http") && port == -1) {
-                port = 80;
+            	return new URL(protocol, host, path + getQueryString(urlVariables));
             } else if (protocol.equalsIgnoreCase("https") && port == -1) {
-                port = 443;
+            	return new URL(protocol, host, path + getQueryString(urlVariables));
             }
             // ensure that port 80 and 8080 requests use http and not https
             if (port == 80 || port == 8080) {
@@ -109,24 +110,27 @@ public class TankHttpUtil {
     }
     
     public static List<PartHolder> getPartsFromBody(BaseRequest request) {
+    	List<PartHolder> parameters = new ArrayList<PartHolder>();
         String s = new String(Base64.decodeBase64(request.getBody()));
-        String boundary = StringUtils.substringBefore(s, "\r\n").substring(2);
-        List<PartHolder> parameters = new ArrayList<PartHolder>();
-        request.setBody(s);
-        try {
-            MultipartStream multipartStream = new MultipartStream(new ByteArrayInputStream(s.getBytes()), boundary.getBytes());
-            boolean nextPart = multipartStream.skipPreamble();
-            while (nextPart) {
-                String header = multipartStream.readHeaders();
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                multipartStream.readBodyData(bos);
-                PartHolder p = new PartHolder(bos.toByteArray(), header);
-                parameters.add(p);
-                nextPart = multipartStream.readBoundary();
-            }
-        } catch (Exception e) {
-            LOG.error(e.toString(), e);
-            // a read or write error occurred
+        if (StringUtils.isNotBlank(s)) {
+	        String boundary = StringUtils.substringBefore(s, "\r\n").substring(2);
+	        request.setBody(s);
+	        try {
+	            @SuppressWarnings("deprecation")
+				MultipartStream multipartStream = new MultipartStream(new ByteArrayInputStream(s.getBytes()), boundary.getBytes());
+	            boolean nextPart = multipartStream.skipPreamble();
+	            while (nextPart) {
+	                String header = multipartStream.readHeaders();
+	                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	                multipartStream.readBodyData(bos);
+	                PartHolder p = new PartHolder(bos.toByteArray(), header);
+	                parameters.add(p);
+	                nextPart = multipartStream.readBoundary();
+	            }
+	        } catch (Exception e) {
+	            LOG.error(e.toString(), e);
+	            // a read or write error occurred
+	        }
         }
         return parameters;
     }

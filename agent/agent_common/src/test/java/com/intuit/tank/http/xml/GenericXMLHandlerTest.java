@@ -17,8 +17,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.BasicConfigurator;
 import org.jdom.Document;
 import org.junit.*;
 
@@ -32,11 +30,6 @@ import static org.junit.Assert.*;
  * @generatedBy CodePro at 12/16/14 4:29 PM
  */
 public class GenericXMLHandlerTest {
-
-    static {
-        BasicConfigurator.configure();
-    }
-
     /**
      * Run the GenericXMLHandler() constructor test.
      * 
@@ -45,23 +38,16 @@ public class GenericXMLHandlerTest {
      * @generatedBy CodePro at 12/16/14 4:29 PM
      */
     @Test
-    public void testGenericXMLHandlerNamespace()
+    public void testGenericXMLHandler_1()
             throws Exception {
-        File file = new File("src/test/resources/soapResponse.xml");
-        String xmlString = FileUtils.readFileToString(file);
-        GenericXMLHandler handler = new GenericXMLHandler(xmlString);
-        String text = handler.GetElementText("//sessionUUID");
-        Assert.assertEquals("1005f480-e1ea-4616-8073-6276abad010d", text);
-    }
 
-    @Test
-    public void testGenericXMLHandlerNoNamespace()
-            throws Exception {
-        File file = new File("src/test/resources/soapResponseNoNS.xml");
-        String xmlString = FileUtils.readFileToString(file);
-        GenericXMLHandler handler = new GenericXMLHandler(xmlString);
-        String text = handler.GetElementText("//sessionUUID");
-        Assert.assertEquals("1005f480-e1ea-4616-8073-6276abad010d", text);
+        GenericXMLHandler result = new GenericXMLHandler();
+
+        // An unexpected exception was thrown in user code while executing this test:
+        // java.lang.ExceptionInInitializerError
+        // at org.apache.log4j.LogManager.getLogger(Logger.java:117)
+        // at com.intuit.tank.http.xml.GenericXMLHandler.<clinit>(GenericXMLHandler.java:31)
+        assertNotNull(result);
     }
 
     /**

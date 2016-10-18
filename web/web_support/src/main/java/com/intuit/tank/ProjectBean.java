@@ -15,19 +15,22 @@ package com.intuit.tank;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.enterprise.context.ConversationScoped;
+import javax.enterprise.context.Conversation;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.jboss.seam.faces.context.conversation.Begin;
-import org.jboss.seam.faces.context.conversation.End;
-import org.jboss.seam.international.status.Messages;
-import org.jboss.seam.security.Identity;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import com.intuit.tank.util.Messages;
+import org.picketlink.Identity;
+import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.model.basic.User;
 
 import com.intuit.tank.auth.Security;
 import com.intuit.tank.dao.ProjectDao;
@@ -50,7 +53,7 @@ import com.intuit.tank.vm.settings.AccessRight;
 @ConversationScoped
 public class ProjectBean implements Serializable {
 
-    private static final Logger LOG = Logger.getLogger(ProjectBean.class);
+    private static final Logger LOG = LogManager.getLogger(ProjectBean.class);
 
     private static final long serialVersionUID = 1L;
     private Project project;
@@ -60,6 +63,13 @@ public class ProjectBean implements Serializable {
 
     @Inject
     private Identity identity;
+    
+    @Inject
+    private IdentityManager identityManager;
+    
+    @Inject
+    private Conversation conversation;
+    
     @Inject
     private Security security;
 
@@ -106,18 +116,33 @@ public class ProjectBean implements Serializable {
     }
 
     /**
-     * @return the saveAsName
+     * @return the Name
      */
     public String getName() {
         return getProject().getName();
     }
 
     /**
-     * @param saveAsName
-     *            the saveAsName to set
+     * @param Name
+     *            the Name to set
      */
     public void setName(String name) {
         getProject().setName(name);
+    }
+    
+    /**
+     * @return the Comment
+     */
+    public String getComments() {
+        return getProject().getComments();
+    }
+    
+    /**
+     * @param Comment
+     *            the Comment to set
+     */
+    public void setComments(String comment) {
+        getProject().setComments(comment);
     }
 
     /**
@@ -125,8 +150,8 @@ public class ProjectBean implements Serializable {
      * 
      * @param project
      */
-    @Begin()
     public void openProject(Project prj) {
+    	conversation.begin();
         doOpenProject(prj);
     }
 
@@ -138,7 +163,7 @@ public class ProjectBean implements Serializable {
         LOG.info("Opening Project " + prj + " workloads " + project.getWorkloads());
         usersAndTimes.init();
         notificationsEditor.init();
-        jobMaker.init();
+        jobMaker.init(this);
         dataFileBean.init();
         workloadScripts.init();
         projectVariableEditor.init();
@@ -148,8 +173,8 @@ public class ProjectBean implements Serializable {
         }
     }
 
-    @End
     public String cancel() {
+    	conversation.end();
         return "success";
     }
 
@@ -214,14 +239,17 @@ public class ProjectBean implements Serializable {
                 save();
             } else {
                 Project copied = copyProject();
+                copied.getWorkloads().get(0).getJobConfiguration().setVariables(new HashMap<String,String>());
                 copied = new ProjectDao().saveOrUpdateProject(copied);
                 save(); // FIXME Hack for original project losing data. Do not know why this works
+                projectVariableEditor.copyTo(copied.getWorkloads().get(0));
                 new WorkloadDao().saveOrUpdate(copied.getWorkloads().get(0));
                 doOpenProject(copied);
                 projectEvent.fire(new ModifiedProjectMessage(project, this));
                 messages.info("Project " + originalName + " has been saved as " + project.getName() + ".");
             }
         } catch (Exception e) {
+        	LOG.error(e.getMessage());
             messages.error(e.getMessage());
         }
     }
@@ -238,11 +266,11 @@ public class ProjectBean implements Serializable {
         workloads.add(workload);
         ret.setWorkloads(workloads);
         ret.setComments(project.getComments());
-        ret.setCreator(identity.getUser().getId());
+        ret.setCreator(identityManager.lookupById(User.class, identity.getAccount().getId()).getLoginName());
         ret.setName(saveAsName);
         ret.setProductName(project.getProductName());
         ret.setScriptDriver(project.getScriptDriver());
-        projectVariableEditor.copyTo(workload);
+
         usersAndTimes.copyTo(workload);
         workloadScripts.copyTo(workload);
 

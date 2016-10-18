@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.intuit.tank</groupId>
     <artifactId>web-parent</artifactId>
-    <version>2.1.8</version>
+    <version>2.2.2</version>
   </parent>
 
   <artifactId>tank</artifactId>
@@ -44,13 +44,6 @@
                       <targetPath>${project.build.directory}/tank/docs</targetPath>
                     </resource>
                     <resource>
-                      <directory>${project.parent.parent.basedir}/rest/api/script/target/site/apidocs</directory>
-                      <includes>
-                        <include>**/*</include>
-                      </includes>
-                      <targetPath>${project.build.directory}/tank/apidocs</targetPath>
-                    </resource>
-                    <resource>
                       <directory>${project.parent.parent.basedir}/doc/tank_installation_guide/target/docbook/publish/en-US</directory>
                       <includes>
                         <include>**/*</include>
@@ -77,7 +70,7 @@
                         <include>${cert.p12}</include>
                       </includes>
                       <targetPath>${project.build.directory}/tank/tools</targetPath>
-
+                      
                     </resource>
                     <resource>
                       <directory>${project.parent.parent.basedir}/agent/apiharness_pkg/target</directory>
@@ -145,7 +138,7 @@
       <artifactId>tank-common</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+   
 
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -253,7 +246,7 @@
 
     <dependency>
       <groupId>org.apache.tomcat</groupId>
-      <artifactId>servlet-api</artifactId>
+      <artifactId>tomcat-servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -272,7 +265,7 @@
 
     <dependency>
       <groupId>org.primefaces.themes</groupId>
-      <artifactId>all-themes</artifactId>
+      <artifactId>redmond</artifactId>
     </dependency>
 
     <dependency>

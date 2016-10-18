@@ -21,17 +21,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.enterprise.context.Conversation;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.event.Event;
 import javax.faces.model.SelectItem;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.jboss.seam.faces.context.conversation.Begin;
-import org.jboss.seam.faces.context.conversation.End;
-import org.jboss.seam.international.status.Messages;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import com.intuit.tank.util.Messages;
 import org.primefaces.model.DualListModel;
 
 import com.intuit.tank.ModifiedUserMessage;
@@ -55,7 +55,7 @@ import com.intuit.tank.vm.settings.TankConfig;
 public class UserEdit implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger LOG = Logger.getLogger(UserEdit.class);
+    private static final Logger LOG = LogManager.getLogger(UserEdit.class);
 
     private String password;
 
@@ -67,9 +67,9 @@ public class UserEdit implements Serializable {
 
     @Inject
     private Messages messages;
-
+    
     @Inject
-    private TsConversationManager tsConversationManager;
+    private Conversation conversation;
 
     private User user;
 
@@ -153,8 +153,8 @@ public class UserEdit implements Serializable {
      * @param user
      * @return
      */
-    @Begin
     public String edit(User user) {
+    	conversation.begin();
         clear();
         this.user = user;
         initSelectionModel();
@@ -165,8 +165,8 @@ public class UserEdit implements Serializable {
      * 
      * @return
      */
-    @Begin
     public String newUser() {
+    	conversation.begin();
         clear();
         this.user = new User();
         initSelectionModel();
@@ -215,7 +215,7 @@ public class UserEdit implements Serializable {
         user = userDao.saveOrUpdate(user);
         userEvent.fire(new ModifiedUserMessage(user, this));
         messages.info("User " + user.getName() + " has been " + (isNew ? "created" : "modified") + ".");
-        tsConversationManager.end();
+        conversation.end();
         clear();
         return "success";
     }
@@ -230,8 +230,8 @@ public class UserEdit implements Serializable {
         selectionModel = null;
     }
 
-    @End
     public String cancel() {
+    	conversation.end();
         clear();
         return "success";
     }

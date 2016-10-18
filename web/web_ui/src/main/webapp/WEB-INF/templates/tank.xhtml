@@ -41,7 +41,7 @@
 
             <p:toolbarGroup align="left">
               <h:outputLink value="#{request.contextPath}/">
-                <h:graphicImage value="/resources/gfx/TankLogo.svg" style="height:54px; width:151px; padding: 0 20px 0 0" />
+                <h:graphicImage library="gfx" name="TankLogo.svg" style="height:54px; width:151px; padding: 0 20px 0 0" />
               </h:outputLink>
             </p:toolbarGroup>
 
@@ -85,7 +85,7 @@
               <h:panelGroup
                 styleClass="ts-header-menu-itm #{navigation.section eq 'admin' ? 'ts-header-menu-itm-selected' : ''} noBg noBorder">
                 <h:outputLink value="#{request.contextPath}/admin"
-                  rendered="#{identity.inGroup('admin', 'tankUser')}">Admin</h:outputLink>
+                  rendered="#{security.isAdmin()}">Admin</h:outputLink>
               </h:panelGroup>
 
 
@@ -100,7 +100,7 @@
               <h:panelGroup rendered="#{identity.loggedIn}" styleClass="ts-header-menu-itm noBg noBorder">
                 <h:commandLink action="/tools/account.xhtml" value="Change Password" style="font-size: smaller;" />
                 <br />
-                <h:commandLink action="#{identity.logout}" value="Logout" />
+                <h:commandLink action="#{tsAuthenticator.logout}" value="Logout" />
               </h:panelGroup>
               <h:panelGroup styleClass="ts-header-menu-itm noBg noBorder">
                 <h:outputLink value="#{request.contextPath}/docs" target="help">Help</h:outputLink>
@@ -121,7 +121,7 @@
 
     <div id="ajaxStatus" class="status">
       <div class="centerDiv align-center">
-        <h:graphicImage value="/resources/gfx/ajax-loader.gif" />
+        <h:graphicImage library="gfx" name="ajax-loader.gif" />
       </div>
       <div class="centerDiv align-center" style="margin-top: 10px;">
         <h:outputText value="Loading..." style="font-weight: bold;" />

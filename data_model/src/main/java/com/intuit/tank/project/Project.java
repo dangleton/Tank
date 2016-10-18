@@ -29,9 +29,10 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.envers.AuditMappedBy;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.Length;
@@ -77,7 +78,7 @@ public class Project extends OwnableEntity {
     @Length(max = 1024)
     private String comments;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "project_id", referencedColumnName = "id")
     @OrderColumn(name = "position")
     @AuditMappedBy(mappedBy = "project", positionMappedBy = "position")
@@ -127,6 +128,9 @@ public class Project extends OwnableEntity {
     }
 
     public String getComments() {
+    	if(StringUtils.isEmpty(comments)) {
+    		return "...";
+    	}
         return comments;
     }
 

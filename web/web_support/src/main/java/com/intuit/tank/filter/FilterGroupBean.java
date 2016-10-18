@@ -17,11 +17,11 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jboss.seam.international.status.Messages;
+import com.intuit.tank.util.Messages;
 
 import com.intuit.tank.auth.Security;
 import com.intuit.tank.dao.ScriptFilterGroupDao;
@@ -110,7 +110,7 @@ public class FilterGroupBean extends SelectableBean<ScriptFilterGroup> implement
     @Override
     public void selectAll() {
         super.selectAll();
-        filterBean.processAllSelection();
+        processAllSelection();
     }
 
     /**
@@ -120,7 +120,14 @@ public class FilterGroupBean extends SelectableBean<ScriptFilterGroup> implement
     @Override
     public void unselectAll() {
         super.unselectAll();
-        filterBean.processAllSelection();
+        processAllSelection();
+    }
+
+    public void processAllSelection() {
+        List<SelectableWrapper<ScriptFilterGroup>> wrappers = getSelectionList();
+        for (SelectableWrapper<ScriptFilterGroup> wrapper : wrappers) {
+            filterBean.processSelection(wrapper);
+        }
     }
 
 }

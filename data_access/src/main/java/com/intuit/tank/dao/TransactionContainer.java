@@ -21,7 +21,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * TransactionContainer
@@ -31,16 +32,11 @@ import org.apache.log4j.Logger;
  */
 public class TransactionContainer {
 
-    private static final Logger LOG = Logger.getLogger(TransactionContainer.class);
+    private static final Logger LOG = LogManager.getLogger(TransactionContainer.class);
 
     private static EntityManagerFactory entityManagerFactory;
-    static {
-        try {
-            entityManagerFactory = Persistence.createEntityManagerFactory("wats");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private static volatile boolean initialized = false;  
+    private static Boolean lock = new Boolean(true);
 
     private EntityManager em;
     private EntityTransaction transaction;
@@ -51,7 +47,21 @@ public class TransactionContainer {
      * @param initiatingObject
      */
     public TransactionContainer() {
-
+    	synchronized(lock){  
+            
+  	      if(initialized){  
+  	        return;  
+  	      }  
+  	        
+  	      initialized = true;  
+  	        
+  	      try{  
+  	    	  entityManagerFactory = Persistence.createEntityManagerFactory("wats"); 
+  	          
+  	      } catch(Throwable t){  
+  	        LOG.error("Failed to setup persistence unit!", t);  
+  	      }  
+  	}  
     }
 
     /**
@@ -85,6 +95,16 @@ public class TransactionContainer {
             transaction.commit();
         } else {
             LOG.debug("Commit ignored from initiating Object " + initiatingObject + " need initiating object "
+                    + this.initiatingObject);
+        }
+    }
+    
+    public void rollbackTransaction(Object initiatingObject) {
+        if (transaction != null && this.initiatingObject == initiatingObject) {
+            LOG.debug("Rollback transaciton with initiating Object " + initiatingObject);
+            transaction.rollback();
+        } else {
+            LOG.debug("Rollback ignored from initiating Object " + initiatingObject + " need initiating object "
                     + this.initiatingObject);
         }
     }

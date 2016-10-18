@@ -20,11 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.bean.ViewScoped;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.jboss.seam.international.status.Messages;
+import com.intuit.tank.util.Messages;
 
 import com.intuit.tank.auth.Security;
 import com.intuit.tank.dao.ScriptFilterDao;
@@ -48,9 +48,6 @@ public class FilterBean extends SelectableBean<ScriptFilter> implements Serializ
 
     @Inject
     private ExceptionHandler exceptionHandler;
-
-    @Inject
-    private FilterGroupBean filterGroupBean;
 
     @Inject
     private Security security;
@@ -129,13 +126,6 @@ public class FilterBean extends SelectableBean<ScriptFilter> implements Serializ
             if (wrapper != null) {
                 wrapper.setSelected(selected);
             }
-        }
-    }
-
-    public void processAllSelection() {
-        List<SelectableWrapper<ScriptFilterGroup>> wrappers = filterGroupBean.getSelectionList();
-        for (SelectableWrapper<ScriptFilterGroup> wrapper : wrappers) {
-            processSelection(wrapper);
         }
     }
 

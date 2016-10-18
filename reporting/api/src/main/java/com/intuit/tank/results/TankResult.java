@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.intuit.tank.reporting.api.Namespace;
 
@@ -44,7 +44,7 @@ import com.intuit.tank.reporting.api.Namespace;
         "error",
         "timeStamp"
 })
-public class TankResult implements Serializable {
+public class TankResult implements Serializable, Comparable {
 
     private static final long serialVersionUID = 1L;
 
@@ -183,5 +183,10 @@ public class TankResult implements Serializable {
             error = result.error;
         }
     }
+
+	@Override
+	public int compareTo(Object o) {
+		return this.requestName.compareTo(((TankResult)o).getRequestName());
+	}
 
 }
