@@ -546,12 +546,9 @@ public class AgentDebuggerFrame extends JFrame {
         setCurrentTestPlan(null);
         this.currentWorkload = currentWorkload;
         if (currentWorkload != null) {
-<<<<<<< HEAD
-            DefaultComboBoxModel model = new DefaultComboBoxModel(
+
+            DefaultComboBoxModel<HDTestPlan> model = new DefaultComboBoxModel<HDTestPlan>(
                     currentWorkload.getPlans().toArray(new HDTestPlan[currentWorkload.getPlans().size()]));
-=======
-            DefaultComboBoxModel<HDTestPlan> model = new DefaultComboBoxModel<HDTestPlan>(currentWorkload.getPlans().toArray(new HDTestPlan[currentWorkload.getPlans().size()]));
->>>>>>> upstream/master
             if (currentWorkload.getPlans().size() > 0) {
                 setCurrentTestPlan(currentWorkload.getPlans().get(0));
                 model.setSelectedItem(currentTestPlan);
@@ -1018,18 +1015,13 @@ public class AgentDebuggerFrame extends JFrame {
         if (args.length > 0) {
             url = args[0];
         }
-/*        Properties props = new Properties();
-        try {
-            InputStream configStream = AgentDebuggerFrame.class.getResourceAsStream("/log4j.properties");
-            props.load(configStream);
-            configStream.close();
-        } catch (IOException e) {
-            System.out.println("Error: Cannot laod configuration file ");
-        }
-        props.setProperty("log4j.appender.agent.File", "debugger.log");
-        LogManager.resetConfiguration();
-        PropertyConfigurator.configure(props);
-*/
+        /*
+         * Properties props = new Properties(); try { InputStream configStream =
+         * AgentDebuggerFrame.class.getResourceAsStream("/log4j.properties"); props.load(configStream);
+         * configStream.close(); } catch (IOException e) { System.out.println("Error: Cannot laod configuration file ");
+         * } props.setProperty("log4j.appender.agent.File", "debugger.log"); LogManager.resetConfiguration();
+         * PropertyConfigurator.configure(props);
+         */
         new AgentDebuggerFrame(true, url).setVisible(true);
     }
 

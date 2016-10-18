@@ -10,6 +10,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.reporting.api.ResultsReporter;
 import com.intuit.tank.reporting.api.SerializerUtil;
@@ -28,8 +30,8 @@ import com.intuit.tank.storage.FileStorageFactory;
  */
 public class FileStorageResultsReporter implements ResultsReporter {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger
-            .getLogger(FileStorageResultsReporter.class);
+    private static final Logger LOG = LogManager.getLogger(FileStorageResultsReporter.class);
+
 
     private static final ThreadPoolExecutor EXECUTOR = new ThreadPoolExecutor(10, 50, 60, TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(50), Executors.defaultThreadFactory(),

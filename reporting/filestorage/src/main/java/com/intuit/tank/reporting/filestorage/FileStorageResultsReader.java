@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.reporting.api.PagedTimingResults;
 import com.intuit.tank.reporting.api.ResultsReader;
@@ -31,8 +33,8 @@ import com.intuit.tank.storage.FileStorageFactory;
  */
 public class FileStorageResultsReader implements ResultsReader {
 
-    private static final org.apache.log4j.Logger LOG = org.apache.log4j.Logger
-            .getLogger(FileStorageResultsReader.class);
+    private static final Logger LOG = LogManager.getLogger(FileStorageResultsReader.class);
+
 
     private FileStorage fileStorage;
 

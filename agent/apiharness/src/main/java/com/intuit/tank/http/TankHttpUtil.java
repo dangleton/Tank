@@ -7,7 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import com.intuit.tank.harness.logging.LogUtil;
 import com.intuit.tank.http.binary.BinaryResponse;
@@ -17,7 +18,7 @@ import com.intuit.tank.logging.LogEventType;
 
 public class TankHttpUtil {
 
-    private static Logger logger = Logger.getLogger(TankHttpUtil.class);
+    private static final Logger LOG = LogManager.getLogger(TankHttpUtil.class);
 
     public static URL buildUrl(String protocol, String host, int port, String path, Map<String, String> urlVariables) {
 
@@ -64,7 +65,7 @@ public class TankHttpUtil {
                         queryString.append(nvp.toString());
 
                     } catch (Exception ex) {
-                        logger.warn(LogUtil.getLogMessage("Unable to set query string value: " + ex.getMessage(), LogEventType.System));
+                        LOG.warn(LogUtil.getLogMessage("Unable to set query string value: " + ex.getMessage(), LogEventType.System));
                     }
                 }
             }
