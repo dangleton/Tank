@@ -24,17 +24,13 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.intuit.tank.common.ScriptAssignment;
 import com.intuit.tank.common.ScriptUtil;
 import com.intuit.tank.dao.ScriptDao;
-import com.intuit.tank.project.Script;
-import com.intuit.tank.project.ScriptGroup;
-import com.intuit.tank.project.ScriptGroupStep;
-import com.intuit.tank.project.ScriptStep;
-import com.intuit.tank.project.TestPlan;
 import com.intuit.tank.vm.common.TankConstants;
 import com.intuit.tank.vm.common.util.MethodTimer;
 import com.intuit.tank.vm.settings.TankConfig;
@@ -230,6 +226,32 @@ public class JobValidator {
         }
         mt.endAndLog();
     }
+
+    /**
+     * 
+     * @param requestedAgents 
+     * @param groups
+     * @return
+     */
+    public static final boolean canLaunchInstances(int requestedAgents, Set<com.intuit.tank.project.Group> groups) {
+        boolean ret = false;
+        if (groups.contains(new Group(TankConstants.TANK_GROUP_ADMIN))) {
+            ret = true;
+        }
+        int defaultNumInstancesToLaunch = new TankConfig().getVmManagerConfig().getDefaultNumInstancesToLaunch();
+        if (requestedAgents <= defaultNumInstancesToLaunch) {
+            ret = true;
+        }
+        for (com.intuit.tank.project.Group group : groups) {
+            if (group.getName().startsWith(TankConstants.AGENT_LIMIT_PREFIX)) {
+                int allowedAgents = NumberUtils
+                        .toInt(group.getName().substring(TankConstants.AGENT_LIMIT_PREFIX.length()), 10000000);
+                ret |= allowedAgents >= requestedAgents;
+            }
+        }
+        return ret;
+    }
+
 
     private void addDuration(String groupName, int loop, long milis) {
         Long val = this.expectedDuration.get(groupName);

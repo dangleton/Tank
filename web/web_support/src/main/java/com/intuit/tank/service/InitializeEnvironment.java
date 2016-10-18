@@ -21,6 +21,8 @@ import java.util.Collection;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Initialized;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
@@ -44,8 +46,7 @@ import com.intuit.tank.vm.settings.TankConfig;
  * @author dangleton
  * 
  */
-@Singleton
-@Startup
+@ApplicationScoped
 public class InitializeEnvironment {
     private static final Logger LOG = LogManager.getLogger(InitializeEnvironment.class);
 
@@ -65,6 +66,10 @@ public class InitializeEnvironment {
         createDefaultGroups();
         createDefaultUsers();
         initialize = true;
+    }
+    
+    public void initObserve(@Observes @Initialized(ApplicationScoped.class) Object init) {
+        LOG.info("INIT... " + init);
     }
 
     /**
