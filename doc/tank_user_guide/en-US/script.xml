@@ -1092,30 +1092,100 @@
     </section>
     <section>
         <title>Assignment and Validation Examples</title>
-        <para> Examples for Raw, JSON and XML response body</para>
-        <section>
-            <title>JSON</title>
+        <para> This section will demonstrate how to parse the response body for validation and assignment purposes. 
+        The section will be divided up into 3 examples that cover the content-types of JSON, XML and RAW. 
+        Each example will be made up of the following: </para>
+        <itemizedlist>
+            <listitem>
+                Sample response body of that content-type
+            </listitem>
+            <listitem>
+                How to setup an “Assignment” entry
+            </listitem>
+            <listitem>
+                How to setup a “Validation” entry
+            </listitem>
+        </itemizedlist>
+        <para>Before divining into the examples, we will review the parameters that are used to define an “Assignment” or “Validation” entry.</para>
+        <para>There are three parameters that define an "Assignment" entry:
+        </para>
+        <itemizedlist>
+            <listitem>
+                Location - Defines what section of the response request to parse (i.e.
+                Header, Cookie or Body). In our case we will set
+                this to "Body" as we want to parse the response
+                body.
+            </listitem>
+            <listitem>
+                Variable - Declare the variable  that will hold the data that is returned after parsing the response body.
+            </listitem>
+            <listitem>
+                Key – Define the search pattern for parsing the response body. For content-types of JSON or XML use the XPath expression notation. 
+                For the RAW content-type, this will require using the “substringBetween” function to parse the response body. Format: #{stringFunctions.substringBetween(sourceString, Left_Boundary , Right_Boundary)}
+            </listitem>
+        </itemizedlist>
+<!--          <sbr></sbr> -->
+        <para>There are four parameters that define a "Validation" entry. For a description of the parameters Location and Key see the "Assignment" section as they are the same</para>
+        <itemizedlist>
+<!--             <listitem>
+                Location - Defines what section of the response request to parse (i.e.
+                Header, Cookie or Body). In our case we will set
+                this to "Body" as we want to parse the response
+                body.
+            </listitem>
+            <listitem>
+                Key – Define the search pattern for parsing the response body. For content-types of JSON or XML use the XPath expression notation. For the RAW content-type, this will require using the “substringBetween” function to parse the response body. Format: #{stringFunctions.substringBetween(sourceString, Left_Boundary , Right_Boundary)}
+            </listitem> -->
+            <listitem>
+                Operator - Select which comparison operator to use for comparing the parsed result with the expected result. The following is the list of supported operators:
+                 <itemizedlist>
+                    <listitem>Equals</listitem>
+                    <listitem>Not Equals</listitem>
+                    <listitem>Empty</listitem>
+                    <listitem>Not Empty</listitem>
+                    <listitem>Contains</listitem>
+                    <listitem>Does not contains</listitem>
+                    <listitem>Less Than</listitem>
+                    <listitem>Greater Than</listitem>
+                 </itemizedlist>
+            </listitem>
+            <listitem>
+                Variable or Lookup String - Defines the expected results to be used to compare with the parsed results. You can either type in the literal string or a variable. When using
+                a variable you will need to use the following format: #{variableName}.
+            </listitem>
+        </itemizedlist>
+        <note>
             <para>
-                <code>Sample JSON Body Response</code>
+                Tank uses the XPath notation for selecting nodes in JSON or XML documents. It also uses index 1 instead of 0 for selecting the first element in a JSON or XML document.
+            </para>
+        </note>
+        <section>
+            <title>JSON Example</title>
+            <para>
+            <figure>
+            <title>Sample JSON Response Body</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="images/scripts/scripts_10.png"
                             format="PNG" align="Center" />
                     </imageobject>
-                    <!-- <caption>Sample JSON Response</caption> -->
+<!--                     <caption>Sample JSON Response</caption> -->
                     <alt>Sample JSON Response</alt>
-                </mediaobject>
-                <code>JSON Assignment Setup</code>
+                    </mediaobject>
+             </figure>
+             <figure>
+                <title>Assignment Setup</title>
                 <mediaobject>
                     <imageobject>
-                        <imagedata fileref="images/scripts/scripts_11.png"
-                            format="PNG" align="Center" />
+                    <imagedata fileref="images/scripts/scripts_11.png"
+                                format="PNG" align="Center" />
                     </imageobject>
-                    <alt>JSON sample assignment</alt>
+                   <alt>JSON sample assignment</alt>
                 </mediaobject>
+            </figure>
                 <variablelist>
                     <varlistentry>
-                        <term>Assignment</term>
+                        <term>After parsing the response body:</term>
                         <listitem>
                             <para>FirstNodeCountrycode = MX
                             </para>
@@ -1127,7 +1197,8 @@
                         </listitem>
                     </varlistentry>
                 </variablelist>
-                <code>JSON Validation Setup</code>
+                <figure>
+                <title>Validation Setup</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="images/scripts/scripts_12.png"
@@ -1135,21 +1206,24 @@
                     </imageobject>
                     <alt>JSON sample validation</alt>
                 </mediaobject>
+                </figure>
             </para>
         </section>
         <section>
-            <title>XML</title>
+            <title>XML Example</title>
             <para>
-                <code>Sample XML Response</code>
-                <mediaobject>
-                    <imageobject>
-                        <imagedata fileref="images/scripts/scripts_13.png"
-                            format="PNG" align="Center" />
-                    </imageobject>
-                    <!-- <caption>Sample XML Response</caption> -->
-                    <alt>Sample XML Response</alt>
-                </mediaobject>
-                <code>XML Assignment Setup</code>
+                <figure>
+                <title>Sample XML Response</title>
+                    <mediaobject>
+                        <imageobject>
+                            <imagedata fileref="images/scripts/scripts_13.png"
+                                format="PNG" align="Center" />
+                        </imageobject>
+                        <alt>Sample XML Response</alt>
+                    </mediaobject>
+                </figure>
+                <figure>
+                <title>XML Assignment Setup</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="images/scripts/scripts_14.png"
@@ -1157,9 +1231,10 @@
                     </imageobject>
                     <alt>XML sample assignment</alt>
                 </mediaobject>
+                </figure>
                 <variablelist>
                     <varlistentry>
-                        <term>Assignment</term>
+                        <term>After parsing the response body:</term>
                         <listitem>
                             <para>firstSlideNodeTitle = Wake up to WonderWidgets!</para>
                         </listitem>
@@ -1171,7 +1246,8 @@
                         </listitem>
                     </varlistentry>
                 </variablelist>
-                <code>XML Validation Setup</code>
+                <figure>
+                <title>XML Validation Setup</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="images/scripts/scripts_15.png"
@@ -1179,11 +1255,51 @@
                     </imageobject>
                     <alt>XML sample validation</alt>
                 </mediaobject>
+                </figure>
             </para>
         </section>
         <section>
-            <title>RAW</title>
-            <para></para>
+            <title>RAW Example</title>
+            <para>
+                <figure>
+                <title>RAW Sample Example</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/scripts/scripts_16.png"
+                            format="PNG" align="Center" />
+                    </imageobject>
+                    <alt>Sample Raw Response</alt>
+                </mediaobject>
+                </figure>
+                <figure>
+                <title>RAW Assignment Setup</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/scripts/scripts_17.png"
+                            format="PNG" align="Center" />
+                    </imageobject>
+                    <alt>Raw Assignment Setup</alt>
+                </mediaobject>
+                </figure>
+                <variablelist>
+                    <varlistentry>
+                        <term>After parsing the response body</term>
+                        <listitem>
+                            <para>StateDataAttrNm = d83d00xml3dk</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+               <figure>
+                <title>RAW Validation Setup</title>
+                <mediaobject>
+                    <imageobject>
+                        <imagedata fileref="images/scripts/scripts_18.png"
+                            format="PNG" align="Center" />
+                    </imageobject>
+                    <alt>Raw Assignment Setup</alt>
+                </mediaobject>
+                </figure>
+            </para>
         </section>
     </section>
 </chapter>
