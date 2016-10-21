@@ -259,6 +259,7 @@
         <activeByDefault>false</activeByDefault>
       </activation>
       <modules>
+        <module>test_support</module>
         <module>doc</module>
         <module>agent</module>
         <module>tools</module>
