@@ -196,6 +196,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
+        <module>test_support</module>
         <module>agent</module>
         <module>tools</module>
         <module>rest</module>
