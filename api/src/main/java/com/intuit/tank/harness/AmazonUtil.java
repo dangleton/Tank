@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -95,7 +96,7 @@ public class AmazonUtil {
             LOG.debug("Failed getting public host: " + e);
         }
         if (StringUtils.isBlank(ret)) {
-            //LOG.info("getting local_ipv4...");
+            // LOG.info("getting local_ipv4...");
             ret = getMetaData(CloudMetaDataType.local_ipv4);
         }
         return ret;
@@ -109,6 +110,23 @@ public class AmazonUtil {
      */
     public static String getPublicIp() throws IOException {
         return getMetaData(CloudMetaDataType.public_ipv4);
+    }
+
+    /**
+     * gets the public ip from meta data
+     * 
+     * @return
+     * @throws IOException
+     */
+    @Nullable
+    public static String getRoles() throws IOException {
+        String ret = null;
+        try {
+            ret = getMetaData(CloudMetaDataType.iam_security_credentials);
+        } catch (IOException e) {
+            LOG.warn("Error getting key: " + e.toString());
+        }
+        return ret;
     }
 
     /**
@@ -144,13 +162,29 @@ public class AmazonUtil {
      * 
      * @return the instance Id or null
      */
-    @Nonnull
+    @Nullable
     public static String getInstanceId() {
         String ret = null;
         try {
             ret = getMetaData(CloudMetaDataType.instance_id);
         } catch (IOException e) {
             LOG.warn("Error getting instance ID: " + e.toString());
+        }
+        return ret;
+    }
+
+    /**
+     * Attempts to get the amazon instance-id of the current VM.
+     * 
+     * @return the instance Id or null
+     */
+    @Nonnull
+    public static String[] getSecurityGroups() {
+        String[] ret = new String[0];
+        try {
+            ret = toStringArray(getMetaData(CloudMetaDataType.security_groups));
+        } catch (IOException e) {
+            LOG.warn("Error getting securityGroups: " + e.toString());
         }
         return ret;
     }
@@ -335,6 +369,14 @@ public class AmazonUtil {
             }
         }
         return result;
+    }
+
+    private static String[] toStringArray(String metaData) {
+        String[] ret = new String[0];
+        if (StringUtils.isNotBlank(metaData)) {
+            ret = metaData.split("[\\r\\n]+");
+        }
+        return ret;
     }
 
     private static String convertStreamToString(InputStream is) throws IOException {
