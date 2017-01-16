@@ -6,3 +6,9 @@ tomcat
 orchestrating
 credentials
 misconfigured
+findbugs
+qualcomm
+cloudformation
+jenkins
+plugin
+app
