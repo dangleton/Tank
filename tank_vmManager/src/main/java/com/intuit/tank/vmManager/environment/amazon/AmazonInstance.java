@@ -303,7 +303,7 @@ public class AmazonInstance implements IEnvironmentInstance {
                     String role = AmazonUtil.getRoles();
                     if (StringUtils.isNotBlank(role)) {
                         IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification()
-                                .withArn(role);
+                                .withName(role);
                         runInstancesRequest.withIamInstanceProfile(iamInstanceProfile);
                     }
                 }
