@@ -32,6 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuit.tank.logging.LoggingProfile;
 import com.intuit.tank.vm.api.enumerated.VMRegion;
 import com.intuit.tank.vm.api.enumerated.VMSize;
@@ -121,10 +123,13 @@ public class AmazonUtil {
      * @throws IOException
      */
     @Nullable
-    public static String getRoles() throws IOException {
+    public static String getProfileArn() throws IOException {
         String ret = null;
         try {
-            ret = getMetaData(CloudMetaDataType.iam_security_credentials);
+            String json = getMetaData(CloudMetaDataType.iam_info);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode item = mapper.readTree(json);
+            ret = item.get("InstanceProfileArn").asText();
         } catch (IOException e) {
             LOG.warn("Error getting key: " + e.toString());
         }

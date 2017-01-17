@@ -300,10 +300,10 @@ public class AmazonInstance implements IEnvironmentInstance {
                             .withName(instanceDescription.getIamRole());
                     runInstancesRequest.withIamInstanceProfile(iamInstanceProfile);
                 } else {
-                    String role = AmazonUtil.getRoles();
-                    if (StringUtils.isNotBlank(role)) {
+                    String profileArn = AmazonUtil.getProfileArn();
+                    if (StringUtils.isNotBlank(profileArn)) {
                         IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification()
-                                .withName(role);
+                                .withArn(profileArn);
                         runInstancesRequest.withIamInstanceProfile(iamInstanceProfile);
                     }
                 }
