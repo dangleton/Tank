@@ -293,7 +293,7 @@ public class AmazonInstance implements IEnvironmentInstance {
                 } else if (StringUtils.isNotBlank(instanceDescription.getSecurityGroup())) {
                     runInstancesRequest.withSecurityGroups(instanceDescription.getSecurityGroup());
                 } else {
-                    runInstancesRequest.withSecurityGroups(AmazonUtil.getSecurityGroups());
+                    runInstancesRequest.withSecurityGroupIds(AmazonUtil.getSecurityGroups());
                 }
                 if (StringUtils.isNotBlank(instanceDescription.getIamRole())) {
                     IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification()
