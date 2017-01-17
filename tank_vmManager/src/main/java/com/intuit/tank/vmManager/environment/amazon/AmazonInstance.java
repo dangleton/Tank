@@ -19,6 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
@@ -293,7 +294,9 @@ public class AmazonInstance implements IEnvironmentInstance {
                 } else if (StringUtils.isNotBlank(instanceDescription.getSecurityGroup())) {
                     runInstancesRequest.withSecurityGroups(instanceDescription.getSecurityGroup());
                 } else {
-                    runInstancesRequest.withSecurityGroupIds(AmazonUtil.getSecurityGroups());
+                    String[] groups = AmazonUtil.getSecurityGroups();
+                    LOG.info("using parent security group ids: " + ToStringBuilder.reflectionToString(groups));
+                    runInstancesRequest.withSecurityGroupIds(groups);
                 }
                 if (StringUtils.isNotBlank(instanceDescription.getIamRole())) {
                     IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification()
@@ -357,6 +360,7 @@ public class AmazonInstance implements IEnvironmentInstance {
         }
         return result;
     }
+
 
     /**
      * 
