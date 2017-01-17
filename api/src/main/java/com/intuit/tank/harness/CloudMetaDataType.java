@@ -41,7 +41,7 @@ public enum CloudMetaDataType {
     reservation_id("reservation-id"),
     security_groups("security-groups"),
     security_group_ids("security-group-ids"),
-    macs("network/interfaces/macs/"),
+    macs("network/interfaces/macs"),
     iam_info("iam/info"),
     iam_security_credentials("iam/security-credentials/");
 
