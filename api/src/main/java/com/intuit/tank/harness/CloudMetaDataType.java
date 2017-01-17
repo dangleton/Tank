@@ -40,6 +40,8 @@ public enum CloudMetaDataType {
     ramdisk_id("ramdisk-id"),
     reservation_id("reservation-id"),
     security_groups("security-groups"),
+    security_group_ids("security-group-ids"),
+    macs("network/interfaces/macs/"),
     iam_security_credentials("iam/security-credentials/");
 
     private String key;

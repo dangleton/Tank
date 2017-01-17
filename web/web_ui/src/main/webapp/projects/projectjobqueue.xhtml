@@ -68,7 +68,7 @@
   <h:panelGroup id="refreshDiv" rendered="#{projectJobQueueManager.refreshEnabled}">
     <p:poll id="refreshPoll" interval="#{projectJobQueueManager.refreshInterval}" autoStart="true"
       update=":mainForm:projectTabPanelID:jobTableId, :mainForm:messages, :vldDataForm, 
-        :userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent, :tpsForm:tpsChartDiv"
+        :userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent"
       listener="#{projectJobQueueManager.refreshData()}" />
   </h:panelGroup>
   <div class="vertical-spacer"></div>

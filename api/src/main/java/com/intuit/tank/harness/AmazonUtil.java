@@ -19,7 +19,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -180,13 +182,20 @@ public class AmazonUtil {
      */
     @Nonnull
     public static String[] getSecurityGroups() {
-        String[] ret = new String[0];
+        List<String> ret = new ArrayList<String>();
         try {
-            ret = toStringArray(getMetaData(CloudMetaDataType.security_groups));
+            String[] macs = toStringArray(getMetaData(CloudMetaDataType.mac));
+            for (String mac : macs) {
+                String id = getMetaData(
+                        CloudMetaDataType.macs.getKey() + "/" + mac + "/" + CloudMetaDataType.security_group_ids);
+                if (StringUtils.isNotBlank(id)) {
+                    ret.add(id);
+                }
+            }
         } catch (IOException e) {
             LOG.warn("Error getting securityGroups: " + e.toString());
         }
-        return ret;
+        return ret.toArray(new String[ret.size()]);
     }
 
     /**
@@ -212,7 +221,19 @@ public class AmazonUtil {
      */
     @Nonnull
     public static String getMetaData(CloudMetaDataType metaData) throws IOException {
-        InputStream inputStream = getInputStream(BASE + META_DATA + "/" + metaData.getKey());
+        return getMetaData(metaData.getKey());
+    }
+
+    /**
+     * Attempts to get the amazon instance-id of the current VM.
+     * 
+     * @return the instance Id or empty string from amazon
+     * @throws IOException
+     *             if there is an error communicating with the amazon cloud.
+     */
+    @Nonnull
+    public static String getMetaData(String metaData) throws IOException {
+        InputStream inputStream = getInputStream(BASE + META_DATA + "/" + metaData);
         return convertStreamToString(inputStream);
     }
 
