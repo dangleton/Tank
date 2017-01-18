@@ -240,7 +240,7 @@ public class JobManager implements Serializable {
                         while (retries >= 0) {
                             retries--;
                             try {
-                                LOG.info("Sending command " + cmd + "to url " + url);
+                                LOG.info("Sending command " + cmd + " to url " + url);
                                 new URL(url).getContent();
                                 break;
                             } catch (Exception e) {

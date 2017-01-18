@@ -187,20 +187,15 @@ public class AmazonUtil {
      */
     @Nonnull
     public static String[] getSecurityGroups() {
-        List<String> ret = new ArrayList<String>();
+        String[] ret = new String[0];
         try {
-            String[] macs = toStringArray(getMetaData(CloudMetaDataType.mac));
-            for (String mac : macs) {
-                String id = getMetaData(
-                        CloudMetaDataType.macs.getKey() + "/" + mac + "/" + CloudMetaDataType.security_group_ids);
-                if (StringUtils.isNotBlank(id)) {
-                    ret.add(id);
-                }
-            }
+            String mac = getMetaData(CloudMetaDataType.mac);
+            ret = toStringArray(getMetaData(
+                    CloudMetaDataType.macs.getKey() + "/" + mac + "/" + CloudMetaDataType.security_group_ids.getKey()));
         } catch (IOException e) {
             LOG.warn("Error getting securityGroups: " + e.toString());
         }
-        return ret.toArray(new String[ret.size()]);
+        return ret;
     }
 
     /**
