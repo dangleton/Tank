@@ -89,8 +89,9 @@ public class TankHttpClient3 implements TankHttpClient {
         Protocol.registerProtocol("https", easyhttps);
     }
 
-    public void setConnectionTimeout(long connectionTimeout) {
+    public void setConnectionTimeout(long connectionTimeout, long socketTimeout) {
         httpclient.getParams().setConnectionManagerTimeout(connectionTimeout);
+        httpclient.getParams().setSoTimeout((int) socketTimeout);
     }
     
     

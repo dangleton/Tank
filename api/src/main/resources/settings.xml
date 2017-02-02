@@ -95,6 +95,9 @@
 
 		<!-- connection timeout setting. set to zero to not have a timeout -->
 		<connection-timeout>15000</connection-timeout>
+		
+        <!-- connection timeout setting. set to zero to not have a timeout -->
+		<socket-timeout>30000</socket-timeout>
 
 		<status_report_interval_milis>30000</status_report_interval_milis>
 
