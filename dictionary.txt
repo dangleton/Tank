@@ -12,3 +12,7 @@ cloudformation
 jenkins
 plugin
 app
+dropdown
+workflow
+emails
+jira
