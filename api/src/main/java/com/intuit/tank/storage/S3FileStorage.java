@@ -57,9 +57,9 @@ public class S3FileStorage implements FileStorage, Serializable {
     /**
      * @param basePath
      */
-    public S3FileStorage(String bucketName, boolean compress) {
+    public S3FileStorage(String bName, boolean compress) {
         super();
-        parseBucketName(bucketName);
+        parseBucketName(bName);
         this.compress = compress;
         try {
             TankConfig tankConfig = new TankConfig();
