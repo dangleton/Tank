@@ -17,6 +17,8 @@ import java.io.ByteArrayInputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,7 +60,6 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -102,12 +103,13 @@ public class TankHttpClient4 implements TankHttpClient {
             LOG.error("Error setting accept all: " + e, e);
         }
 
-        httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy())
-                .build();
-        requestConfig = RequestConfig.custom().setSocketTimeout(30000).setConnectTimeout(30000)
-                .setCircularRedirectsAllowed(true).setAuthenticationEnabled(true).setRedirectsEnabled(true)
-
-        .setCookieSpec(CookieSpecs.DEFAULT)
+        httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+        requestConfig = RequestConfig.custom().setSocketTimeout(30000)
+        		.setConnectTimeout(30000)
+        		.setCircularRedirectsAllowed(true)
+        		.setAuthenticationEnabled(true)
+        		.setRedirectsEnabled(true)
+        		.setCookieSpec(CookieSpecs.DEFAULT)
                 .setMaxRedirects(100).build();
 
         // Make sure the same context is used to execute logically related
@@ -120,9 +122,9 @@ public class TankHttpClient4 implements TankHttpClient {
 
     public void setConnectionTimeout(long connectionTimeout) {
         requestConfig = RequestConfig.custom().setSocketTimeout(30000)
-                .setConnectTimeout((int) connectionTimeout)
-                .setCircularRedirectsAllowed(true)
-                .setAuthenticationEnabled(true)
+        		.setConnectTimeout((int) connectionTimeout)
+        		.setCircularRedirectsAllowed(true)
+        		.setAuthenticationEnabled(true)
                 .setRedirectsEnabled(true)
                 .setCookieSpec(CookieSpecs.DEFAULT)
                 .setMaxRedirects(100).build();
@@ -132,7 +134,9 @@ public class TankHttpClient4 implements TankHttpClient {
     /*
      * (non-Javadoc)
      * 
-     * @see com.intuit.tank.httpclient3.TankHttpClient#doGet(com.intuit.tank.http. BaseRequest)
+     * @see
+     * com.intuit.tank.httpclient3.TankHttpClient#doGet(com.intuit.tank.http.
+     * BaseRequest)
      */
     @Override
     public void doGet(BaseRequest request) {
@@ -143,15 +147,16 @@ public class TankHttpClient4 implements TankHttpClient {
     /*
      * (non-Javadoc)
      * 
-     * @see com.intuit.tank.httpclient3.TankHttpClient#doPut(com.intuit.tank.http. BaseRequest)
+     * @see
+     * com.intuit.tank.httpclient3.TankHttpClient#doPut(com.intuit.tank.http.
+     * BaseRequest)
      */
     @Override
     public void doPut(BaseRequest request) {
         HttpPut httpput = new HttpPut(request.getRequestUrl());
         // Multiple calls can be expensive, so get it once
         String requestBody = request.getBody();
-        HttpEntity entity = new StringEntity(requestBody,
-                ContentType.create(request.getContentType(), request.getContentTypeCharSet()));
+        HttpEntity entity = new StringEntity(requestBody, ContentType.create(request.getContentType(), request.getContentTypeCharSet()));
         httpput.setEntity(entity);
         sendRequest(request, httpput, requestBody);
     }
@@ -159,7 +164,9 @@ public class TankHttpClient4 implements TankHttpClient {
     /*
      * (non-Javadoc)
      * 
-     * @see com.intuit.tank.httpclient3.TankHttpClient#doDelete(com.intuit.tank.http. BaseRequest)
+     * @see
+     * com.intuit.tank.httpclient3.TankHttpClient#doDelete(com.intuit.tank.http.
+     * BaseRequest)
      */
     @Override
     public void doDelete(BaseRequest request) {
@@ -176,7 +183,9 @@ public class TankHttpClient4 implements TankHttpClient {
     /*
      * (non-Javadoc)
      * 
-     * @see com.intuit.tank.httpclient3.TankHttpClient#doPost(com.intuit.tank.http. BaseRequest)
+     * @see
+     * com.intuit.tank.httpclient3.TankHttpClient#doPost(com.intuit.tank.http.
+     * BaseRequest)
      */
     @Override
     public void doPost(BaseRequest request) {
@@ -186,34 +195,30 @@ public class TankHttpClient4 implements TankHttpClient {
         if (BaseRequest.CONTENT_TYPE_MULTIPART.equalsIgnoreCase(request.getContentType())) {
             entity = buildParts(request);
         } else {
-            entity = new StringEntity(requestBody,
-                    ContentType.create(request.getContentType(), request.getContentTypeCharSet()));
+            entity = new StringEntity(requestBody, ContentType.create(request.getContentType(), request.getContentTypeCharSet()));
         }
         httppost.setEntity(entity);
-        request.getHeaderInformation().put("Content-Type", request.getContentType());
         sendRequest(request, httppost, requestBody);
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see com.intuit.tank.httpclient3.TankHttpClient#addAuth(com.intuit.tank.http. AuthCredentials)
+     * @see
+     * com.intuit.tank.httpclient3.TankHttpClient#addAuth(com.intuit.tank.http.
+     * AuthCredentials)
      */
     @Override
     public void addAuth(AuthCredentials creds) {
-        String host = (StringUtils.isBlank(creds.getHost()) || "*".equals(creds.getHost())) ? AuthScope.ANY_HOST
-                : creds.getHost();
-        String realm = (StringUtils.isBlank(creds.getRealm()) || "*".equals(creds.getRealm())) ? AuthScope.ANY_REALM
-                : creds.getRealm();
+        String host = (StringUtils.isBlank(creds.getHost()) || "*".equals(creds.getHost())) ? AuthScope.ANY_HOST : creds.getHost();
+        String realm = (StringUtils.isBlank(creds.getRealm()) || "*".equals(creds.getRealm())) ? AuthScope.ANY_REALM : creds.getRealm();
         int port = NumberUtils.toInt(creds.getPortString(), AuthScope.ANY_PORT);
         String scheme = creds.getScheme() != null ? creds.getScheme().getRepresentation() : AuthScope.ANY_SCHEME;
         AuthScope scope = new AuthScope(host, port, realm, scheme);
         if (AuthScheme.NTLM == creds.getScheme()) {
-            context.getCredentialsProvider().setCredentials(scope,
-                    new NTCredentials(creds.getUserName(), creds.getPassword(), "tank-test", creds.getRealm()));
+            context.getCredentialsProvider().setCredentials(scope, new NTCredentials(creds.getUserName(), creds.getPassword(), "tank-test", creds.getRealm()));
         } else {
-            context.getCredentialsProvider().setCredentials(scope,
-                    new UsernamePasswordCredentials(creds.getUserName(), creds.getPassword()));
+            context.getCredentialsProvider().setCredentials(scope, new UsernamePasswordCredentials(creds.getUserName(), creds.getPassword()));
         }
 
     }
@@ -245,12 +250,10 @@ public class TankHttpClient4 implements TankHttpClient {
         if (StringUtils.isNotBlank(proxyhost)) {
             HttpHost proxy = new HttpHost(proxyhost, proxyport);
             DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy())
-                    .setRoutePlanner(routePlanner).build();
+            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRoutePlanner(routePlanner).build();
         } else {
 
-            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).setRedirectStrategy(new LaxRedirectStrategy())
-                    .build();
+            httpclient = HttpClients.custom().setSSLSocketFactory(sslsf).build();
         }
     }
 
@@ -260,9 +263,7 @@ public class TankHttpClient4 implements TankHttpClient {
         CloseableHttpResponse response = null;
         try {
             uri = method.getURI().toString();
-            LOG.debug(request.getLogUtil().getLogMessage(
-                    "About to " + method.getMethod() + " request to " + uri + " with requestBody  " + requestBody,
-                    LogEventType.Informational));
+            LOG.debug(request.getLogUtil().getLogMessage("About to " + method.getMethod() + " request to " + uri + " with requestBody  " + requestBody, LogEventType.Informational));
             List<String> cookies = new ArrayList<String>();
             if (context.getCookieStore().getCookies() != null) {
                 for (Cookie cookie : context.getCookieStore().getCookies()) {
@@ -278,8 +279,7 @@ public class TankHttpClient4 implements TankHttpClient {
             // read response body
             byte[] responseBody = new byte[0];
             // check for no content headers
-            if (response.getStatusLine().getStatusCode() != 203 && response.getStatusLine().getStatusCode() != 202
-                    && response.getStatusLine().getStatusCode() != 204) {
+            if (response.getStatusLine().getStatusCode() != 203 && response.getStatusLine().getStatusCode() != 202 && response.getStatusLine().getStatusCode() != 204) {
                 try {
                     InputStream httpInputStream = response.getEntity().getContent();
                     responseBody = IOUtils.toByteArray(httpInputStream);
@@ -287,14 +287,15 @@ public class TankHttpClient4 implements TankHttpClient {
                     LOG.warn("could not get response body: " + e);
                 }
             }
-            long endTime = System.currentTimeMillis();
-            processResponse(responseBody, startTime, endTime, request, response.getStatusLine().getReasonPhrase(),
-                    response.getStatusLine().getStatusCode(), response.getAllHeaders());
-            waitTime = endTime - startTime;
+            waitTime = System.currentTimeMillis() - startTime;
+            processResponse(responseBody, waitTime, request, response.getStatusLine().getReasonPhrase(), response.getStatusLine().getStatusCode(), response.getAllHeaders());
+            
+        } catch (UnknownHostException uhex) {
+            LOG.error(request.getLogUtil().getLogMessage("UnknownHostException to url: " + uri + " |  error: " + uhex.toString(), LogEventType.IO), uhex);
+        } catch (SocketException sex) {
+            LOG.error(request.getLogUtil().getLogMessage("SocketException to url: " + uri + " |  error: " + sex.toString(), LogEventType.IO), sex);
         } catch (Exception ex) {
-            LOG.error(request.getLogUtil().getLogMessage(
-                    "Could not do " + method.getMethod() + " to url " + uri + " |  error: " + ex.toString(),
-                    LogEventType.IO), ex);
+            LOG.error(request.getLogUtil().getLogMessage("Could not do " + method.getMethod() + " to url " + uri + " |  error: " + ex.toString(), LogEventType.IO), ex);
             throw new RuntimeException(ex);
         } finally {
             try {
@@ -305,12 +306,9 @@ public class TankHttpClient4 implements TankHttpClient {
             } catch (Exception e) {
                 LOG.warn("Could not release connection: " + e, e);
             }
-            if (method.getMethod().equalsIgnoreCase("post")
-                    && request.getLogUtil().getAgentConfig().getLogPostResponse()) {
+            if (method.getMethod().equalsIgnoreCase("post") && request.getLogUtil().getAgentConfig().getLogPostResponse()) {
                 LOG.info(request.getLogUtil().getLogMessage(
-                        "Response from POST to " + request.getRequestUrl() + " got status code "
-                                + request.getResponse().getHttpCode() + " BODY { " + request.getResponse().getBody()
-                                + " }",
+                        "Response from POST to " + request.getRequestUrl() + " got status code " + request.getResponse().getHttpCode() + " BODY { " + request.getResponse().getBody() + " }",
                         LogEventType.Informational));
             }
         }
@@ -320,12 +318,14 @@ public class TankHttpClient4 implements TankHttpClient {
     }
 
     /**
-     * Wait for the amount of time it took to get a response from the system if the response time is over some threshold
-     * specified in the properties file. This will ensure users don't bunch up together after a blip on the system under
-     * test
+     * Wait for the amount of time it took to get a response from the system if
+     * the response time is over some threshold specified in the properties
+     * file. This will ensure users don't bunch up together after a blip on the
+     * system under test
      * 
      * @param responseTime
-     *            - response time of the request; this will also be the time to sleep
+     *            - response time of the request; this will also be the time to
+     *            sleep
      * @param uri
      */
     private void doWaitDueToLongResponse(BaseRequest request, long responseTime, String uri) {
@@ -334,8 +334,7 @@ public class TankHttpClient4 implements TankHttpClient {
             long maxAgentResponseTime = config.getMaxAgentResponseTime();
             if (maxAgentResponseTime < responseTime) {
                 long waitTime = Math.min(config.getMaxAgentWaitTime(), responseTime);
-                LOG.warn(request.getLogUtil().getLogMessage(
-                        "Response time to slow | delaying " + waitTime + " ms | url --> " + uri, LogEventType.Script));
+                LOG.warn(request.getLogUtil().getLogMessage("Response time to slow | delaying " + waitTime + " ms | url --> " + uri, LogEventType.Script));
                 Thread.sleep(waitTime);
             }
         } catch (InterruptedException e) {
@@ -346,8 +345,7 @@ public class TankHttpClient4 implements TankHttpClient {
     /**
      * Process the response data
      */
-    private void processResponse(byte[] bResponse, long startTime, long endTime, BaseRequest request, String message,
-            int httpCode, Header[] headers) {
+    private void processResponse(byte[] bResponse, long waitTime, BaseRequest request, String message, int httpCode, Header[] headers) {
         BaseResponse response = request.getResponse();
         try {
             if (response == null) {
@@ -377,11 +375,10 @@ public class TankHttpClient4 implements TankHttpClient {
                     response.setCookie(cookie.getName(), cookie.getValue());
                 }
             }
-            response.setResponseTime(endTime - startTime);
+            response.setResponseTime(waitTime);
             String contentType = response.getHttpHeader("Content-Type");
             String contentEncode = response.getHttpHeader("Content-Encoding");
-            if (BaseResponse.isDataType(contentType) && contentEncode != null
-                    && contentEncode.toLowerCase().contains("gzip")) {
+            if (BaseResponse.isDataType(contentType) && contentEncode != null && contentEncode.toLowerCase().contains("gzip")) {
                 // decode gzip for data types
                 try {
                     GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(bResponse));
@@ -389,8 +386,7 @@ public class TankHttpClient4 implements TankHttpClient {
                     IOUtils.copy(in, out);
                     bResponse = out.toByteArray();
                 } catch (Exception e) {
-                    LOG.warn(
-                            request.getLogUtil().getLogMessage("cannot decode gzip stream: " + e, LogEventType.System));
+                    LOG.warn(request.getLogUtil().getLogMessage("cannot decode gzip stream: " + e, LogEventType.System));
                 }
             }
             response.setResponseBody(bResponse);
@@ -418,25 +414,23 @@ public class TankHttpClient4 implements TankHttpClient {
                 method.setHeader((String) mapEntry.getKey(), (String) mapEntry.getValue());
             }
         } catch (Exception ex) {
-            LOG.warn(request.getLogUtil().getLogMessage("Unable to set header: " + ex.getMessage(),
-                    LogEventType.System));
+            LOG.warn(request.getLogUtil().getLogMessage("Unable to set header: " + ex.getMessage(), LogEventType.System));
         }
     }
+
 
     private HttpEntity buildParts(BaseRequest request) {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         for (PartHolder h : TankHttpUtil.getPartsFromBody(request)) {
             if (h.getFileName() == null) {
                 if (h.isContentTypeSet()) {
-                    builder.addTextBody(h.getPartName(), new String(h.getBodyAsString()),
-                            ContentType.create(h.getContentType()));
+                    builder.addTextBody(h.getPartName(), new String(h.getBodyAsString()), ContentType.create(h.getContentType()));
                 } else {
                     builder.addTextBody(h.getPartName(), new String(h.getBodyAsString()));
                 }
             } else {
                 if (h.isContentTypeSet()) {
-                    builder.addBinaryBody(h.getPartName(), h.getBody(), ContentType.create(h.getContentType()),
-                            h.getFileName());
+                    builder.addBinaryBody(h.getPartName(), h.getBody(), ContentType.create(h.getContentType()), h.getFileName());
                 } else {
                     builder.addBinaryBody(h.getFileName(), h.getBody());
                 }
@@ -444,5 +438,6 @@ public class TankHttpClient4 implements TankHttpClient {
         }
         return builder.build();
     }
+    
 
 }
