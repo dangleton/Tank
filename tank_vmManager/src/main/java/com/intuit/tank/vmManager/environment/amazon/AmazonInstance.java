@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -19,6 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.Md5Crypt;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -56,8 +58,11 @@ import com.amazonaws.services.ec2.model.Tenancy;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.TerminateInstancesResult;
 import com.intuit.tank.dao.JobInstanceDao;
+import com.intuit.tank.dao.UserDao;
 import com.intuit.tank.harness.AmazonUtil;
+import com.intuit.tank.project.Group;
 import com.intuit.tank.project.JobInstance;
+import com.intuit.tank.project.User;
 import com.intuit.tank.vm.api.enumerated.VMImageType;
 import com.intuit.tank.vm.api.enumerated.VMRegion;
 import com.intuit.tank.vm.common.TankConstants;
@@ -152,7 +157,6 @@ public class AmazonInstance implements IEnvironmentInstance {
     public List<VMInformation> describeInstances(String... instanceIds) {
         List<VMInformation> result = new ArrayList<VMInformation>();
         try {
-
             DescribeInstancesResult results = asynchEc2Client.describeInstances();
             HashSet<String> ids = new HashSet<String>(Arrays.asList(instanceIds));
             for (Reservation reservationDescription : results.getReservations()) {
@@ -229,7 +233,8 @@ public class AmazonInstance implements IEnvironmentInstance {
                     instanceRequest.addUserData(TankConstants.KEY_AWS_SECRET_KEY_ID, cloudCredentials.getKeyId());
                     instanceRequest.addUserData(TankConstants.KEY_AWS_SECRET_KEY, cloudCredentials.getKey());
                 }
-
+                User user = getSystemUser();
+                instanceRequest.addUserData(TankConstants.KEY_TANK_API_TOKEN, user.getApiToken());
                 instanceRequest.addUserData(TankConstants.KEY_CONTROLLER_URL, config.getControllerBase());
                 instanceRequest.addUserData(TankConstants.KEY_NUM_USERS_PER_AGENT,
                         Integer.toString(instanceRequest.getNumUsersPerAgent()));
@@ -361,6 +366,24 @@ public class AmazonInstance implements IEnvironmentInstance {
         return result;
     }
 
+
+    private User getSystemUser() {
+        UserDao userDao = new UserDao();
+        User ret = userDao.findByUserName(TankConstants.TANK_USER_SYSTEM);
+        if (ret == null) {
+            ret = new User();
+            ret.setEmail("system@tank.com");
+            ret.setName(TankConstants.TANK_USER_SYSTEM);
+            ret.addGroup(new Group(TankConstants.TANK_GROUP_ADMIN));
+            ret.setPassword(UUID.randomUUID().toString());
+            ret.generateApiToken();
+            ret = userDao.saveOrUpdate(ret);
+        } else if (StringUtils.isBlank(ret.getApiToken())) {
+            ret.generateApiToken();
+            ret = userDao.saveOrUpdate(ret);
+        }
+        return ret;
+    }
 
     /**
      * 

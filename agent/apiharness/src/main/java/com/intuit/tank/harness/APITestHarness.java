@@ -315,6 +315,8 @@ public class APITestHarness {
             baseUrl = AmazonUtil.getControllerBaseUrl();
         }
         AgentServiceClient client = new AgentServiceClient(baseUrl);
+        client.addAuth(TankConstants.TANK_USER_SYSTEM, AmazonUtil.getTankApiToken());
+       
         String instanceUrl = null;
         int tries = 0;
         while (instanceUrl == null) {

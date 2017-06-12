@@ -53,7 +53,7 @@ public class RestSecurityFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
             ServletException {
-        if (config.isRestSecurityEnabled()) {
+        if (config.isRestSecurityEnabled() && shouldSecure((HttpServletRequest) request)) {
             User user = getUser((HttpServletRequest) request);
             if (user == null) {
                 // send 401 unauthorized and return
@@ -65,6 +65,13 @@ public class RestSecurityFilter implements Filter {
             }
         }
         chain.doFilter(request, response);
+    }
+
+    private boolean shouldSecure(HttpServletRequest request) {
+        boolean ret = true;
+        String path = request.getServletPath() + request.getPathInfo();
+        ret = (!path.startsWith("/rest/v1/agent-service"));
+        return ret;
     }
 
     public User getUser(HttpServletRequest req) {

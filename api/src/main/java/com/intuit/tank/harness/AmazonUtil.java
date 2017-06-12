@@ -149,6 +149,20 @@ public class AmazonUtil {
         }
         return ret;
     }
+    
+    /**
+     * 
+     * @return
+     */
+    public static String getTankApiToken() {
+        String ret = null;
+        try {
+            ret = getUserDataAsMap().get(TankConstants.KEY_TANK_API_TOKEN);
+        } catch (IOException e) {
+            LOG.warn("Error getting token: " + e.toString());
+        }
+        return ret;
+    }
 
     /**
      * 
