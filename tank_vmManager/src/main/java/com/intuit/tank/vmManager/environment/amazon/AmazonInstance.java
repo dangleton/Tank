@@ -1,5 +1,6 @@
 package com.intuit.tank.vmManager.environment.amazon;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,7 +21,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.Md5Crypt;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -40,15 +40,20 @@ import com.amazonaws.services.ec2.model.DescribeAddressesRequest;
 import com.amazonaws.services.ec2.model.DescribeAddressesResult;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.GroupIdentifier;
 import com.amazonaws.services.ec2.model.IamInstanceProfileSpecification;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.InstanceStateChange;
 import com.amazonaws.services.ec2.model.InstanceType;
+import com.amazonaws.services.ec2.model.LaunchSpecification;
 import com.amazonaws.services.ec2.model.Placement;
 import com.amazonaws.services.ec2.model.RebootInstancesRequest;
+import com.amazonaws.services.ec2.model.RequestSpotInstancesRequest;
+import com.amazonaws.services.ec2.model.RequestSpotInstancesResult;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
+import com.amazonaws.services.ec2.model.SpotPlacement;
 import com.amazonaws.services.ec2.model.StartInstancesRequest;
 import com.amazonaws.services.ec2.model.StartInstancesResult;
 import com.amazonaws.services.ec2.model.StopInstancesRequest;
@@ -275,11 +280,25 @@ public class AmazonInstance implements IEnvironmentInstance {
 
                     }
                 }
-                List<Address> randomizedIps = new ArrayList<Address>(availableEips);
-                Collections.shuffle(randomizedIps);
-                RunInstancesRequest runInstancesRequest = new RunInstancesRequest(image, number, number);
                 Tenancy tenancy = StringUtils.isEmpty(instanceDescription.getTenancy()) ? Tenancy.Default
                         : Tenancy.fromValue(instanceDescription.getTenancy());
+
+                List<Address> randomizedIps = new ArrayList<Address>(availableEips);
+                Collections.shuffle(randomizedIps);
+                NumberFormat nf = NumberFormat.getInstance();
+                nf.setMaximumFractionDigits(3);
+                RequestSpotInstancesRequest spotRequest = new RequestSpotInstancesRequest(nf.format(vmType.getCost()))
+                        .withInstanceCount(number);
+                LaunchSpecification launchSpecification = new LaunchSpecification();
+                launchSpecification.withInstanceType(size.toString())
+                        .withImageId(image)
+                        .withKeyName(keyPair)
+                        .withPlacement(new SpotPlacement().withTenancy(tenancy))
+                        .withMonitoringEnabled(true)
+                        .withUserData(userData);
+                spotRequest.withLaunchSpecification(launchSpecification);
+
+                RunInstancesRequest runInstancesRequest = new RunInstancesRequest(image, number, number);
                 runInstancesRequest.withInstanceType(size.toString())
                         .withKeyName(keyPair)
                         .withPlacement(new Placement().withTenancy(tenancy))
@@ -291,37 +310,70 @@ public class AmazonInstance implements IEnvironmentInstance {
                     List<String> list = instanceDescription.getSubnetIds();
                     int index = ThreadLocalRandom.current().nextInt(list.size());
                     runInstancesRequest.withSubnetId(list.get(index));
+                    spotRequest.getLaunchSpecification().withSubnetId(list.get(index));
                 }
                 Collection<String> c = instanceDescription.getSecurityGroupIds();
                 if (!c.isEmpty()) {
+
                     LOG.info("Security Group IDs " + c.toString());
                     runInstancesRequest.withSecurityGroupIds(c);
+                    List<GroupIdentifier> list = new ArrayList<GroupIdentifier>();
+                    for (String id : c) {
+                        list.add(new GroupIdentifier().withGroupId(id));
+                    }
+                    spotRequest.getLaunchSpecification().withAllSecurityGroups(list);
                 } else if (StringUtils.isNotBlank(instanceDescription.getSecurityGroup())) {
                     runInstancesRequest.withSecurityGroups(instanceDescription.getSecurityGroup());
+                    spotRequest.getLaunchSpecification().withSecurityGroups(instanceDescription.getSecurityGroup());
                 } else {
                     String[] groups = AmazonUtil.getSecurityGroups();
                     LOG.info("using parent security group ids: " + ToStringBuilder.reflectionToString(groups));
                     runInstancesRequest.withSecurityGroupIds(groups);
+                    List<GroupIdentifier> list = new ArrayList<GroupIdentifier>();
+                    for (String id : groups) {
+                        list.add(new GroupIdentifier().withGroupId(id));
+                    }
+                    spotRequest.getLaunchSpecification().withAllSecurityGroups(list);
                 }
                 if (StringUtils.isNotBlank(instanceDescription.getIamRole())) {
                     IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification()
                             .withName(instanceDescription.getIamRole());
                     runInstancesRequest.withIamInstanceProfile(iamInstanceProfile);
+                    spotRequest.getLaunchSpecification().withIamInstanceProfile(iamInstanceProfile);
                 } else {
                     String profileArn = AmazonUtil.getProfileArn();
                     if (StringUtils.isNotBlank(profileArn)) {
                         IamInstanceProfileSpecification iamInstanceProfile = new IamInstanceProfileSpecification()
                                 .withArn(profileArn);
                         runInstancesRequest.withIamInstanceProfile(iamInstanceProfile);
+                        spotRequest.getLaunchSpecification().withIamInstanceProfile(iamInstanceProfile);
                     }
                 }
                 // add zone info if specified
                 if (!StringUtils.isEmpty(instanceDescription.getZone())) {
                     runInstancesRequest
-                            .withPlacement(new Placement().withAvailabilityZone(instanceDescription.getZone()));
+                            .getPlacement().withAvailabilityZone(instanceDescription.getZone());
+                    spotRequest.getLaunchSpecification().getPlacement()
+                            .withAvailabilityZone(instanceDescription.getZone());
                 }
-                RunInstancesResult results = asynchEc2Client.runInstances(runInstancesRequest);
-                result = new AmazonDataConverter().processReservation(results.getReservation(), vmRegion);
+
+                boolean useSpot = instanceRequest.isUseSpot();
+                if (useSpot) {
+                    RequestSpotInstancesResult spotInstancesResult = asynchEc2Client.requestSpotInstances(spotRequest);
+                    result = new AmazonDataConverter().processSpotReservation(asynchEc2Client, spotInstancesResult,
+                            vmRegion);
+                    if (result.size() != instanceRequest.getNumberOfInstances()) {
+                        number = instanceRequest.getNumberOfInstances() - result.size();
+                        // request the additional instances using regular instances
+                        runInstancesRequest.setMinCount(number);
+                        runInstancesRequest.setMaxCount(number);
+                        RunInstancesResult results = asynchEc2Client.runInstances(runInstancesRequest);
+                        result.addAll(new AmazonDataConverter().processReservation(results.getReservation(), vmRegion));
+                    }
+                } else {
+                    RunInstancesResult results = asynchEc2Client.runInstances(runInstancesRequest);
+                    result = new AmazonDataConverter().processReservation(results.getReservation(), vmRegion);
+                }
                 if (instanceRequest.isUseEips()) {
                     synchronized (instanceRequest.getRegion()) {
                         Iterator<Address> iter = randomizedIps.iterator();
@@ -365,7 +417,6 @@ public class AmazonInstance implements IEnvironmentInstance {
         }
         return result;
     }
-
 
     private User getSystemUser() {
         UserDao userDao = new UserDao();

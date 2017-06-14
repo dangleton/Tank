@@ -91,6 +91,26 @@ public class VMInstanceRequest extends VMRequest implements Serializable {
         }
         return new TankConfig().getVmManagerConfig().isUseElasticIps();
     }
+    
+    /**
+     * 
+     * @return
+     */
+    public boolean isUseSpot() {
+        if (this.items.get(TankConstants.KEY_USE_SPOT) != null) {
+            return (Boolean) this.items.get(TankConstants.KEY_USE_SPOT);
+        }
+        return new TankConfig().getVmManagerConfig().isUseSpot();
+    }
+
+    /**
+     * whether to use spot instances or not
+     * 
+     * @param useSpot
+     */
+    public void setUseSpot(boolean useSpot) {
+        items.put(TankConstants.KEY_USE_SPOT, useSpot);
+    }
 
     /**
      * @param ami
@@ -342,6 +362,8 @@ public class VMInstanceRequest extends VMRequest implements Serializable {
         }
         return Integer.valueOf((String) this.items.get(TankConstants.KEY_NUMBER_OF_INSTANCES));
     }
+
+    
 
     /**
      * 

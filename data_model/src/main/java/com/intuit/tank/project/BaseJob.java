@@ -101,6 +101,9 @@ public abstract class BaseJob extends BaseEntity {
     @Column(name = "use_eips")
     private Boolean useEips;
 
+    @Column(name = "use_spot")
+    private Boolean useSpot;
+
     /**
      * 
      */
@@ -129,11 +132,12 @@ public abstract class BaseJob extends BaseEntity {
         this.numUsersPerAgent = copy.numUsersPerAgent;
         this.vmInstanceType = copy.vmInstanceType;
         this.useEips = copy.useEips;
+        this.useSpot = copy.useSpot;
         this.tankClientClass = copy.getTankClientClass();
     }
 
     public abstract Map<String, String> getVariables();
-    
+
     public abstract Set<Integer> getDataFileIds();
 
     /**
@@ -164,6 +168,21 @@ public abstract class BaseJob extends BaseEntity {
      */
     public void setAllowOverride(boolean allowOverride) {
         this.allowOverride = allowOverride;
+    }
+
+    /**
+     * @return the allowOverride
+     */
+    public boolean isUseSpot() {
+        return useSpot != null ? useSpot :  new TankConfig().getVmManagerConfig().isUseSpot();
+    }
+
+    /**
+     * @param allowOverride
+     *            the allowOverride to set
+     */
+    public void setUseSpot(boolean b) {
+        this.useSpot = b;
     }
 
     /**

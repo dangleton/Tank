@@ -22,10 +22,16 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.ec2.AmazonEC2AsyncClient;
+import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsRequest;
+import com.amazonaws.services.ec2.model.DescribeSpotInstanceRequestsResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.InstanceStateChange;
+import com.amazonaws.services.ec2.model.RequestSpotInstancesResult;
 import com.amazonaws.services.ec2.model.Reservation;
-import com.amazonaws.services.ec2.model.StartInstancesResult;
+import com.amazonaws.services.ec2.model.SpotInstanceRequest;
+import com.amazonaws.services.ec2.model.SpotInstanceStateFault;
 import com.intuit.tank.vm.api.enumerated.VMProvider;
 import com.intuit.tank.vm.api.enumerated.VMRegion;
 import com.intuit.tank.vm.vmManager.VMInformation;
@@ -100,6 +106,103 @@ public class AmazonDataConverter {
             LOG.error(ex.getMessage());
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * @param asynchEc2Client
+     * @param reservation
+     * @param region
+     * @return
+     */
+    public List<VMInformation> processSpotReservation(AmazonEC2AsyncClient ec2, RequestSpotInstancesResult result,
+            VMRegion region) {
+
+        try {
+            List<VMInformation> output = new ArrayList<VMInformation>();
+            ArrayList<String> spotInstanceRequestIds = new ArrayList<String>();
+
+            // Add all of the request ids to the hashset, so we can determine when they hit the
+            // active state.
+            for (SpotInstanceRequest requestResponse : result.getSpotInstanceRequests()) {
+                LOG.info("Created Spot Request: " + requestResponse.getSpotInstanceRequestId());
+                spotInstanceRequestIds.add(requestResponse.getSpotInstanceRequestId());
+            }
+            boolean anyOpen = false;
+            long maxWait = System.currentTimeMillis() + (1000 * 60 * 3);
+            do {
+                DescribeSpotInstanceRequestsRequest describeRequest = new DescribeSpotInstanceRequestsRequest();
+                describeRequest.setSpotInstanceRequestIds(spotInstanceRequestIds);
+
+                anyOpen = false;
+
+                try {
+                    // Retrieve all of the requests we want to monitor.
+                    DescribeSpotInstanceRequestsResult describeResult = ec2
+                            .describeSpotInstanceRequests(describeRequest);
+                    List<SpotInstanceRequest> describeResponses = describeResult.getSpotInstanceRequests();
+
+                    // Look through each request and determine if they are all in
+                    // the active state.
+                    for (SpotInstanceRequest describeResponse : describeResponses) {
+                        // If the state is open, it hasn't changed since we attempted
+                        // to request it. There is the potential for it to transition
+                        // almost immediately to closed or cancelled so we compare
+                        // against open instead of active.
+                        if (describeResponse.getState().equals("open")) {
+                            anyOpen = true;
+                        } else if (describeResponse.getState().equals("active")) {
+                            VMInformation info = requestToVmInformation(describeResponse, region);
+                            output.add(info);
+                        }
+                    }
+                } catch (AmazonServiceException e) {
+                    // If we have an exception, ensure we don't break out of
+                    // the loop. This prevents the scenario where there was
+                    // blip on the wire.
+                    anyOpen = true;
+                }
+
+                try {
+                    // Sleep for 15 seconds.
+                    Thread.sleep(15 * 1000);
+                } catch (Exception e) {
+                    // Do nothing because it woke up early.
+                }
+            } while (anyOpen && System.currentTimeMillis() < maxWait);
+
+            return output;
+        } catch (Exception ex) {
+            LOG.error(ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * @param reqest
+     * @param region
+     * @return
+     */
+    public VMInformation requestToVmInformation(SpotInstanceRequest reqest, VMRegion region) {
+        VMInformation info = new VMInformation();
+        info.setProvider(VMProvider.Amazon);
+        info.setRequestId(reqest.getSpotInstanceRequestId());
+        info.setImageId(reqest.getLaunchSpecification().getImageId());
+        info.setInstanceId(reqest.getInstanceId());
+        info.setKeyName(reqest.getLaunchSpecification().getKeyName());
+        // info.setLaunchTime();
+        info.setRegion(region);
+        // info.setPlatform(instance.getLaunchSpecification());
+        // for (InstanceNetworkInterfaceSpecification spec : instance.getLaunchSpecification().getNetworkInterfaces()) {
+        // spec.get
+        // if (spec.isAssociatePublicIpAddress()) {
+        // info.setPublicDNS(spec.get);
+        // }
+        // }
+        // info.setPrivateDNS(instance.getLaunchSpecification().getNetworkInterfaces());
+        // info.setPublicDNS(instance.getPublicDnsName());
+        info.setState(reqest.getState());
+        info.setSize(reqest.getLaunchSpecification().getInstanceType());
+        return info;
     }
 
 }

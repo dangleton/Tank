@@ -43,7 +43,7 @@ public class ActionComponents implements ScriptChangedListener {
      * @param tankClientChooser 
      * @param actions
      */
-    public ActionComponents(boolean standalone, JComboBox testPlanChooser, JComboBox<TankClientChoice> tankClientChooser, ActionProducer actions) {
+    public ActionComponents(boolean standalone, JComboBox<HDTestPlan> testPlanChooser, JComboBox<TankClientChoice> tankClientChooser, ActionProducer actions) {
         super();
         this.actions = actions;
         runTimingStepsCB = new JCheckBox("Run Timing Steps", false);
@@ -151,7 +151,7 @@ public class ActionComponents implements ScriptChangedListener {
      * @param actions
      * @return
      */
-    private void createToolBar(JComboBox testPlanChooser, JComboBox<TankClientChoice> tankClientChooser, ActionProducer actions, boolean standalone) {
+    private void createToolBar(JComboBox<HDTestPlan> testPlanChooser, JComboBox<TankClientChoice> tankClientChooser, ActionProducer actions, boolean standalone) {
         if (toolBar == null) {
             toolBar = new JToolBar("Toolbar");
             toolBar.setMargin(new Insets(5, 5, 5, 5));

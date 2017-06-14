@@ -155,6 +155,7 @@
 		<!-- <default-region>US_WEST_1</default-region> -->
 		<!-- set to true to default use of available eips for agents -->
 		<use-agent-elastic-ips>false</use-agent-elastic-ips>
+		<use-agent-spot>false</use-agent-spot>
 		<!-- reserved eips will not be used -->
 		<reserved-elastic-ips>
 			<!-- <eip>0.0.0.0</eip> -->

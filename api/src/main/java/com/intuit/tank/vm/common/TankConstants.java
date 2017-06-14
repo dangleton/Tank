@@ -45,6 +45,7 @@ public class TankConstants {
     public static final String KEY_NUM_USERS_PER_AGENT = "numUsersPerAgent";
     public static final String KEY_USE_EIPS = "useEips";
     public static final String KEY_NUMBER_OF_INSTANCES = "numberOfInstances";
+    public static final String KEY_USE_SPOT = "useSpotInstances";
     public static final String KEY_SIZE = "size";
     public static final String RESULTS_PERF = "perf_results";
     public static final String RESULTS_NONE = "no_results";

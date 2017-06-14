@@ -109,7 +109,7 @@ public class RequestAgents implements Serializable {
         return 0;
     }
 
-    public void setUserEips(boolean useEips) {
+    public void setUseEips(boolean useEips) {
         this.items.put(TankConstants.KEY_USE_EIPS, useEips);
     }
 
@@ -118,5 +118,15 @@ public class RequestAgents implements Serializable {
             return (Boolean) this.items.get(TankConstants.KEY_USE_EIPS);
         }
         return new TankConfig().getVmManagerConfig().isUseElasticIps();
+    }
+    public void setUseSpot(boolean b) {
+        this.items.put(TankConstants.KEY_USE_SPOT, b);
+    }
+    
+    public boolean isUseSpot() {
+        if (this.items.get(TankConstants.KEY_USE_SPOT) != null) {
+            return (Boolean) this.items.get(TankConstants.KEY_USE_SPOT);
+        }
+        return new TankConfig().getVmManagerConfig().isUseSpot();
     }
 }

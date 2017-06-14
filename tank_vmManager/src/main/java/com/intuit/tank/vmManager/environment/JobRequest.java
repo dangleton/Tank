@@ -55,6 +55,7 @@ public class JobRequest implements Runnable {
             int machines = JobVmCalculator.getMachinesForAgent(request.getNumberOfUsers(),
                     request.getNumUsersPerAgent());
             instanceRequest.setNumberOfInstances(machines);
+            instanceRequest.setUseSpot(request.isUseSpot());
             instanceRequest.setUserEips(request.isUseEips());
             instanceRequest.setNumUsersPerAgent(JobVmCalculator.getOptimalUsersPerAgent(request.getNumberOfUsers(),
                     machines));

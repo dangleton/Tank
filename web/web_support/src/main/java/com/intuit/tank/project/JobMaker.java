@@ -252,7 +252,22 @@ public class JobMaker implements Serializable {
      * @return
      */
     public void setUseEips(boolean b) {
-            projectBean.getJobConfiguration().setUseEips(b);
+        projectBean.getJobConfiguration().setUseEips(b);
+    }
+    /**
+     * 
+     * @return
+     */
+    public boolean isUseSpot() {
+        return projectBean.getJobConfiguration().isUseSpot();
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public void setUseSpot(boolean b) {
+            projectBean.getJobConfiguration().setUseSpot(b);
     }
 
     /**

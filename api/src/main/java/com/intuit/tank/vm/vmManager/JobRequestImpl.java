@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.jws.soap.SOAPBinding.Use;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -63,6 +65,8 @@ public final class JobRequestImpl implements Serializable, JobRequest {
 
     private String scriptsXmlUrl;
 
+    private boolean useSpot;
+
     public static Builder builder() {
         return new Builder();
     }
@@ -83,6 +87,12 @@ public final class JobRequestImpl implements Serializable, JobRequest {
      */
     public boolean isUseEips() {
         return useEips;
+    }
+    /**
+     * @return the useEips
+     */
+    public boolean isUseSpot() {
+        return useSpot;
     }
 
     /**
@@ -267,6 +277,7 @@ public final class JobRequestImpl implements Serializable, JobRequest {
                 .append("stopBehavior", StopBehavior.fromString(stopBehavior).getDisplay())
                 .append("simulationTime", simulationTime)
                 .append("useEips", useEips)
+                .append("useSpot", useSpot)
                 .append("baselineVirtualUsers", baselineVirtualUsers)
                 .append("userIntervalIncrement", userIntervalIncrement)
                 .append("reportingMode", reportingMode)
@@ -357,6 +368,11 @@ public final class JobRequestImpl implements Serializable, JobRequest {
         @SuppressWarnings("unchecked")
         public GeneratorT withUseEips(boolean aValue) {
             instance.useEips = aValue;
+            return (GeneratorT) this;
+        }
+        @SuppressWarnings("unchecked")
+        public GeneratorT withUseSpot(boolean aValue) {
+            instance.useSpot = aValue;
             return (GeneratorT) this;
         }
 

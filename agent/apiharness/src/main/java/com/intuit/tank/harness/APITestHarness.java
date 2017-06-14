@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
@@ -37,6 +38,19 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -111,6 +125,10 @@ public class APITestHarness {
     private Calendar c = Calendar.getInstance();
     private Date send = new Date();
     private int interval = 20; // SECONDS
+    
+    private CloseableHttpClient httpClient;
+    private HttpClientContext context;
+    private HttpHost targetHost;
 
     static {
         try {
@@ -315,8 +333,29 @@ public class APITestHarness {
             baseUrl = AmazonUtil.getControllerBaseUrl();
         }
         AgentServiceClient client = new AgentServiceClient(baseUrl);
-        client.addAuth(TankConstants.TANK_USER_SYSTEM, AmazonUtil.getTankApiToken());
-       
+        httpClient = HttpClientBuilder.create().build();
+        context = HttpClientContext.create();
+        if (AmazonUtil.isInAmazon()) {
+            client.addAuth(TankConstants.TANK_USER_SYSTEM, AmazonUtil.getTankApiToken());
+            try {
+                URL url = new URL(baseUrl);
+                targetHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
+                        new UsernamePasswordCredentials(TankConstants.TANK_USER_SYSTEM, AmazonUtil.getTankApiToken()));
+                // Create AuthCache instance
+                AuthCache authCache = new BasicAuthCache();
+                // Generate BASIC scheme object and add it to the local auth cache
+                BasicScheme basicAuth = new BasicScheme();
+                authCache.put(targetHost, basicAuth);
+                // Add AuthCache to the execution context
+                context.setCredentialsProvider(credsProvider);
+                context.setAuthCache(authCache);
+            } catch (MalformedURLException e) {
+                LOG.error("Error setting auth: " + e, e);
+            }
+        }
         String instanceUrl = null;
         int tries = 0;
         while (instanceUrl == null) {
@@ -423,9 +462,12 @@ public class APITestHarness {
                     f.delete();
                     f = new File("script.xml");
                 }
-                URL url = new URL(scriptUrl);
+                
                 LOG.info("Downloading file from url " + scriptUrl + " to file " + f.getAbsolutePath());
-                is = url.openStream();
+                CloseableHttpResponse response = httpClient.execute(targetHost, new HttpGet(scriptUrl), context);
+                checkResponse(response);
+                is = response.getEntity().getContent();
+
                 out = new BufferedWriter(new OutputStreamWriter(
                         new FileOutputStream(f), "UTF8"));
                 IOUtils.copy(is, out);
@@ -460,6 +502,13 @@ public class APITestHarness {
         }
     }
 
+    private void checkResponse(CloseableHttpResponse response) {
+        if (response.getStatusLine().getStatusCode() != 200) {
+            throw new RuntimeException("Error getting resource " + response.getStatusLine());
+        }
+    }
+
+
     private void saveDataFile(DataFileRequest dataFileRequest) {
         String dataFileDirPath = new TankConfig().getAgentConfig().getAgentDataFileStorageDir();
         File dataFileDir = new File(dataFileDirPath);
@@ -474,11 +523,13 @@ public class APITestHarness {
         int count = 0;
         while (count++ < MAX_RETRIES) {
             try {
-                URL url = new URL(dataFileRequest.getFileUrl());
                 LOG.info(LogUtil.getLogMessage(
                         "writing file " + dataFileRequest.getFileName() + " to " + dataFile.getAbsolutePath()
-                                + " from url " + url.toExternalForm(), LogEventType.System));
-                is = url.openStream();
+                        + " from url " + dataFileRequest.getFileUrl(), LogEventType.System));
+                CloseableHttpResponse response = httpClient.execute(targetHost, new HttpGet(dataFileRequest.getFileUrl()), context);
+                checkResponse(response);
+                is = response.getEntity().getContent();
+
                 fos = new FileOutputStream(dataFile);
                 IOUtils.copy(is, fos);
                 IOUtils.closeQuietly(fos);

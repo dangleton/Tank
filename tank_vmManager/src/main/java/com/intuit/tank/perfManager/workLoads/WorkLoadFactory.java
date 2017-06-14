@@ -134,6 +134,7 @@ public class WorkLoadFactory {
                 .withStopBehavior(job.getStopBehavior())
                 .withReportingMode(job.getReportingMode())
                 .withUseEips(job.isUseEips())
+                .withUseSpot(job.isUseSpot())
                 .withVmInstanceType(job.getVmInstanceType())
                 .withnumUsersPerAgent(job.getNumUsersPerAgent())
                 .withSimulationTime(job.getSimulationTime()).withStatus(job.getStatus())

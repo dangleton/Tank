@@ -59,7 +59,8 @@ public class AgentDispatcherImpl implements AgentDispatcher {
                     agentRequest.getNumberOfUsers(),
                     agentRequest.getRegion(), agentRequest.getStopBehavior(), agentRequest.getVmInstanceType(),
                     agentRequest.getNumUsersPerAgent());
-            ((VMJobRequest)vmRequest).setUserEips(agentRequest.isUseEips());
+            ((VMJobRequest)vmRequest).setUseEips(agentRequest.isUseEips());
+            ((VMJobRequest)vmRequest).setUseSpot(agentRequest.isUseSpot());
             vmManagerRequest(vmRequest);
 
         } catch (Exception ex) {

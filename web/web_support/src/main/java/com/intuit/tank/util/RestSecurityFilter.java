@@ -1,5 +1,9 @@
 package com.intuit.tank.util;
 
+import static org.picketlink.idm.model.basic.BasicModel.getRole;
+import static org.picketlink.idm.model.basic.BasicModel.getUser;
+import static org.picketlink.idm.model.basic.BasicModel.grantRole;
+
 /*
  * #%L
  * JSF Support Beans
@@ -29,6 +33,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.picketlink.Identity;
+import org.picketlink.authentication.Authenticator.AuthenticationStatus;
+import org.picketlink.idm.IdentityManager;
+import org.picketlink.idm.RelationshipManager;
+import org.picketlink.idm.model.Attribute;
+import org.picketlink.idm.model.basic.BasicModel;
+import org.picketlink.idm.model.basic.Role;
 
 import com.intuit.tank.auth.TankUser;
 import com.intuit.tank.dao.UserDao;
@@ -44,6 +54,12 @@ public class RestSecurityFilter implements Filter {
 
     @Inject
     private Identity identity;
+
+    @Inject
+    private IdentityManager identityManager;
+
+    @Inject
+    private RelationshipManager relationshipManager;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -61,7 +77,7 @@ public class RestSecurityFilter implements Filter {
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                 return; // break filter chain, requested JSP/servlet will not be executed
             } else {
-                ((HttpServletRequest)request).getSession().setAttribute(TankConstants.REST_USER, user);
+                addUserToIdentity(user);
             }
         }
         chain.doFilter(request, response);
@@ -78,9 +94,10 @@ public class RestSecurityFilter implements Filter {
         User user = null;
         // firsttry the session
         if (identity != null) {
-        	org.picketlink.idm.model.basic.User picketLinkUser = (org.picketlink.idm.model.basic.User) identity.getAccount();
+            org.picketlink.idm.model.basic.User picketLinkUser = (org.picketlink.idm.model.basic.User) identity
+                    .getAccount();
             if (picketLinkUser != null && picketLinkUser instanceof TankUser) {
-                user = ((TankUser)picketLinkUser).getUserEntity();
+                user = ((TankUser) picketLinkUser).getUserEntity();
             }
         }
         if (user == null) {
@@ -96,7 +113,7 @@ public class RestSecurityFilter implements Filter {
                             String token = upass[1];
                             UserDao userDao = new UserDao();
                             user = userDao.findByApiToken(token);
-                            if (user == null || user.getName().equals(name)) {
+                            if (user == null || !user.getName().equals(name)) {
                                 user = userDao.authenticate(name, token);
                             }
                         }
@@ -106,13 +123,33 @@ public class RestSecurityFilter implements Filter {
                 LOG.error("Error getting user: " + e, e);
             }
         }
-        
+
         return user;
     }
 
     @Override
     public void destroy() {
 
+    }
+
+    private void addUserToIdentity(User user) {
+        org.picketlink.idm.model.basic.User idmuser = BasicModel.getUser(identityManager, user.getName());
+        if (idmuser == null) {
+            idmuser = new org.picketlink.idm.model.basic.User(user.getName());
+            idmuser.setId(Integer.toString(user.getId()));
+            idmuser.setCreatedDate(user.getCreated());
+            idmuser.setEmail(user.getEmail());
+            idmuser.setAttribute(new Attribute<String>("name", user.getName()));
+            identityManager.add(idmuser);
+            for (com.intuit.tank.project.Group g : user.getGroups()) {
+                Role role = getRole(identityManager, g.getName());
+                if (role == null) {
+                    role = new Role(g.getName());
+                    identityManager.add(role);
+                }
+                grantRole(relationshipManager, idmuser, role);
+            }
+        }
     }
 
 }
