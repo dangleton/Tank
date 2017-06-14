@@ -19,16 +19,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intuit.tank.logging.LoggingProfile;
 import com.intuit.tank.vm.api.enumerated.VMRegion;
 import com.intuit.tank.vm.api.enumerated.VMSize;
@@ -95,7 +100,7 @@ public class AmazonUtil {
             LOG.debug("Failed getting public host: " + e);
         }
         if (StringUtils.isBlank(ret)) {
-            //LOG.info("getting local_ipv4...");
+            // LOG.info("getting local_ipv4...");
             ret = getMetaData(CloudMetaDataType.local_ipv4);
         }
         return ret;
@@ -112,6 +117,26 @@ public class AmazonUtil {
     }
 
     /**
+     * gets the public ip from meta data
+     * 
+     * @return
+     * @throws IOException
+     */
+    @Nullable
+    public static String getProfileArn() throws IOException {
+        String ret = null;
+        try {
+            String json = getMetaData(CloudMetaDataType.iam_info);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode item = mapper.readTree(json);
+            ret = item.get("InstanceProfileArn").asText();
+        } catch (IOException e) {
+            LOG.warn("Error getting key: " + e.toString());
+        }
+        return ret;
+    }
+
+    /**
      * 
      * @return
      */
@@ -121,6 +146,20 @@ public class AmazonUtil {
             ret = getUserDataAsMap().get(TankConstants.KEY_AWS_SECRET_KEY);
         } catch (IOException e) {
             LOG.warn("Error getting key: " + e.toString());
+        }
+        return ret;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public static String getTankApiToken() {
+        String ret = null;
+        try {
+            ret = getUserDataAsMap().get(TankConstants.KEY_TANK_API_TOKEN);
+        } catch (IOException e) {
+            LOG.warn("Error getting token: " + e.toString());
         }
         return ret;
     }
@@ -144,13 +183,31 @@ public class AmazonUtil {
      * 
      * @return the instance Id or null
      */
-    @Nonnull
+    @Nullable
     public static String getInstanceId() {
         String ret = null;
         try {
             ret = getMetaData(CloudMetaDataType.instance_id);
         } catch (IOException e) {
             LOG.warn("Error getting instance ID: " + e.toString());
+        }
+        return ret;
+    }
+
+    /**
+     * Attempts to get the amazon instance-id of the current VM.
+     * 
+     * @return the instance Id or null
+     */
+    @Nonnull
+    public static String[] getSecurityGroups() {
+        String[] ret = new String[0];
+        try {
+            String mac = getMetaData(CloudMetaDataType.mac);
+            ret = toStringArray(getMetaData(
+                    CloudMetaDataType.macs.getKey() + "/" + mac + "/" + CloudMetaDataType.security_group_ids.getKey()));
+        } catch (IOException e) {
+            LOG.warn("Error getting securityGroups: " + e.toString());
         }
         return ret;
     }
@@ -178,7 +235,19 @@ public class AmazonUtil {
      */
     @Nonnull
     public static String getMetaData(CloudMetaDataType metaData) throws IOException {
-        InputStream inputStream = getInputStream(BASE + META_DATA + "/" + metaData.getKey());
+        return getMetaData(metaData.getKey());
+    }
+
+    /**
+     * Attempts to get the amazon instance-id of the current VM.
+     * 
+     * @return the instance Id or empty string from amazon
+     * @throws IOException
+     *             if there is an error communicating with the amazon cloud.
+     */
+    @Nonnull
+    public static String getMetaData(String metaData) throws IOException {
+        InputStream inputStream = getInputStream(BASE + META_DATA + "/" + metaData);
         return convertStreamToString(inputStream);
     }
 
@@ -335,6 +404,14 @@ public class AmazonUtil {
             }
         }
         return result;
+    }
+
+    private static String[] toStringArray(String metaData) {
+        String[] ret = new String[0];
+        if (StringUtils.isNotBlank(metaData)) {
+            ret = metaData.split("[\\r\\n]+");
+        }
+        return ret;
     }
 
     private static String convertStreamToString(InputStream is) throws IOException {

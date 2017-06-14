@@ -135,4 +135,10 @@ public interface JobRequest extends Serializable {
      * @return the numUsersPerAgent
      */
     public int getNumUsersPerAgent();
+
+    /**
+     * 
+     * @return
+     */
+    public boolean isUseSpot();
 }

@@ -45,6 +45,7 @@ public class TankConstants {
     public static final String KEY_NUM_USERS_PER_AGENT = "numUsersPerAgent";
     public static final String KEY_USE_EIPS = "useEips";
     public static final String KEY_NUMBER_OF_INSTANCES = "numberOfInstances";
+    public static final String KEY_USE_SPOT = "useSpotInstances";
     public static final String KEY_SIZE = "size";
     public static final String RESULTS_PERF = "perf_results";
     public static final String RESULTS_NONE = "no_results";
@@ -59,6 +60,7 @@ public class TankConstants {
     public static final String KEY_JVM_ARGS = "jvmArgs";
     public static final String KEY_AWS_SECRET_KEY_ID = "AWS_SECRET_KEY_ID";
     public static final String KEY_AWS_SECRET_KEY = "AWS_SECRET_KEY";
+    public static final String KEY_TANK_API_TOKEN = "TANK_API_TOKEN";
 
     public static final String HTTP_CASE_SKIP = "SKIP";
     public static final String HTTP_CASE_SKIPGROUP = "SKIPGROUP";

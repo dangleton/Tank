@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -78,7 +77,6 @@ import com.intuit.tank.harness.data.HDScriptGroup;
 import com.intuit.tank.harness.data.HDScriptUseCase;
 import com.intuit.tank.harness.data.HDTestPlan;
 import com.intuit.tank.harness.data.HDTestVariables;
-import com.intuit.tank.harness.data.HDVariable;
 import com.intuit.tank.harness.data.HDWorkload;
 import com.intuit.tank.harness.data.Header;
 import com.intuit.tank.harness.data.RequestStep;
@@ -163,7 +161,7 @@ public class AgentDebuggerFrame extends JFrame {
         debuggerActions = new ActionProducer(this, serviceUrl);
         requestResponsePanel = new RequestResponsePanel(this);
         requestResponsePanel.init();
-        testPlanChooser = new JComboBox();
+        testPlanChooser = new JComboBox<HDTestPlan>();
         testPlanChooser.addItemListener(new ItemListener() {
 
             @Override

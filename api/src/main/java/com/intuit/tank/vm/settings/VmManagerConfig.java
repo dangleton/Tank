@@ -307,6 +307,14 @@ public class VmManagerConfig implements Serializable {
     public boolean isUseElasticIps() {
         return config.getBoolean("use-agent-elastic-ips", false);
     }
+    /**
+     * 
+     * @param defaultResult
+     * @return
+     */
+    public boolean isUseSpot() {
+        return config.getBoolean("use-agent-spot", false);
+    }
     
     /**
      * 

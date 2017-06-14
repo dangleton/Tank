@@ -61,6 +61,7 @@ public class AgentConfig implements Serializable {
     private static final String KEY_LOG_POST_REQUEST = "log-post-request";
     private static final String KEY_LOG_VARIABLES = "log-variables";
     private static final String KEY_CONNECTION_TIMEOUT = "connection-timeout";
+    private static final String KEY_SOCKET_TIMEOUT = "socket-timeout";
 
     private static final String KEY_REQUEST_HEADERS = "request-headers/header";
     // private static final String KEY_RESULT_PROVIDERS =
@@ -195,6 +196,13 @@ public class AgentConfig implements Serializable {
      */
     public Long getConnectionTimeout() {
         return config.getLong(KEY_CONNECTION_TIMEOUT, 40000L);
+    }
+    /**
+     * 
+     * @return
+     */
+    public Long getSocketTimeout() {
+        return config.getLong(KEY_SOCKET_TIMEOUT, 30000L);
     }
 
     /**

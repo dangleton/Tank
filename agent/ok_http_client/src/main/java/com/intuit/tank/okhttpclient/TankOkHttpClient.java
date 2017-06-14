@@ -130,8 +130,9 @@ public class TankOkHttpClient implements TankHttpClient {
         }
     }
 
-    public void setConnectionTimeout(long connectionTimeout) {
+    public void setConnectionTimeout(long connectionTimeout, long socketTimeout) {
         okHttpClient.setConnectTimeout(connectionTimeout, TimeUnit.MILLISECONDS);
+        okHttpClient.setReadTimeout(socketTimeout, TimeUnit.MILLISECONDS);
     }
 
     /*

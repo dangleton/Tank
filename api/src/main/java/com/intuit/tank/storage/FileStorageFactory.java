@@ -25,6 +25,9 @@ public class FileStorageFactory {
         if (ret == null) {
             if (base.startsWith("s3:")) {
                 String s = StringUtils.removeStart(FilenameUtils.normalizeNoEndSeparator(base.substring(3)), "/");
+                if (s.startsWith("//")) {
+                    s = s.substring(2);
+                }
                 ret = new S3FileStorage(s, compress);
             } else {
                 ret = new FileSystemFileStorage(base, compress);

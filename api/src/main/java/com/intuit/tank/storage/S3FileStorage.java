@@ -84,7 +84,7 @@ public class S3FileStorage implements FileStorage, Serializable {
             } else {
                 this.s3Client = new AmazonS3Client(config);
             }
-            createBucket(bucketName);
+            createBucket(this.bucketName);
         } catch (Exception ex) {
             LOG.error(ex.getMessage(), ex);
             throw new RuntimeException(ex);

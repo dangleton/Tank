@@ -26,7 +26,7 @@
               </h:panelGroup>
               <h:panelGroup styleClass="formButton pad15Left">
                 <p:commandButton action="#{jobQueueManager.refreshData()}" value="Refresh" onstart="saveScrollPos()"
-                  oncomplete="getScrollPos()" update=":mainForm:jobTableId, :mainForm:refreshDiv, :vldFormStatus, :tpsForm:tpsDetailsContent, :tpsForm:tpsChartDiv"
+                  oncomplete="getScrollPos()" update=":mainForm:jobTableId, :mainForm:refreshDiv, :vldFormStatus, :tpsForm:tpsDetailsContent"
                   ajax="true"
                   style="background-image: url(#{request.contextPath}/resources/gfx/16/refresh.png);
 					background-repeat: no-repeat;
@@ -54,7 +54,7 @@
         <h:panelGroup id="refreshDiv" rendered="#{jobQueueManager.refreshEnabled}">
 
           <p:poll id="agentRefreshPoll" interval="#{jobQueueManager.refreshInterval}" autoStart="true"
-            update=":mainForm:jobTableId, :vldFormStatus, :userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent, :tpsForm:tpsChartDiv"
+            update=":mainForm:jobTableId, :vldFormStatus, :userDetailsForm:userDetailsContent, :tpsForm:tpsDetailsContent"
             onstart="saveScrollPos()" oncomplete="getScrollPos()" listener="#{jobQueueManager.refreshData()}">
           </p:poll>
         </h:panelGroup>
@@ -515,7 +515,7 @@
                     value="#{jobQueueManager.allTpsKeys}" />
                   <p:ajax event="change"
                     listener="#{jobQueueManager.keysChanged}"
-                    update=":tpsForm:tpsChartDiv" />
+                    update=":tpsForm:tpsDetailsContent" />
                 </p:selectCheckboxMenu>
               </div>
             </div>

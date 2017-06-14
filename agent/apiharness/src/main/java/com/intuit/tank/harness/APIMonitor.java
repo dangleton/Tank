@@ -28,6 +28,7 @@ import com.intuit.tank.reporting.api.TPSInfoContainer;
 import com.intuit.tank.vm.agent.messages.WatsAgentStatusResponse;
 import com.intuit.tank.vm.api.enumerated.JobStatus;
 import com.intuit.tank.vm.api.enumerated.WatsAgentCommand;
+import com.intuit.tank.vm.common.TankConstants;
 
 public class APIMonitor implements Runnable {
 
@@ -45,6 +46,7 @@ public class APIMonitor implements Runnable {
         status = vmStatus;
         try {
             client = new CloudServiceClient(APITestHarness.getInstance().getTankConfig().getControllerBase());
+            client.addAuth(TankConstants.TANK_USER_SYSTEM, AmazonUtil.getTankApiToken());
             reportInterval = Math.max(APITestHarness.getInstance().getTankConfig().getAgentConfig()
                     .getStatusReportIntervalMilis(reportInterval), MIN_REPORT_TIME);
         } catch (Exception e) {

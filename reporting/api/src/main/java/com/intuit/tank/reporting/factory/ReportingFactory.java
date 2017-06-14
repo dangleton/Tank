@@ -31,7 +31,7 @@ public final class ReportingFactory {
             HierarchicalConfiguration providerConfig = config.getProviderConfig();
             ret.config(providerConfig);
         } catch (Exception e) {
-            LOG.error("Error instantiating reporter");
+            LOG.error("Error instantiating reporter: " + e, e);
             ret = new DummyResultsReporter();
         }
         return ret;

@@ -61,6 +61,6 @@ public interface TankHttpClient {
      * 
      * @param connectionTimeout
      */
-    public void setConnectionTimeout(long connectionTimeout);
+    public void setConnectionTimeout(long connectionTimeout, long socketTimeout);
 
 }

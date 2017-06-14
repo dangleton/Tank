@@ -120,8 +120,8 @@ public class TankHttpClient4 implements TankHttpClient {
         context.setRequestConfig(requestConfig);
     }
 
-    public void setConnectionTimeout(long connectionTimeout) {
-        requestConfig = RequestConfig.custom().setSocketTimeout(30000)
+    public void setConnectionTimeout(long connectionTimeout, long socketTimeout) {
+        requestConfig = RequestConfig.custom().setSocketTimeout((int)socketTimeout)
         		.setConnectTimeout((int) connectionTimeout)
         		.setCircularRedirectsAllowed(true)
         		.setAuthenticationEnabled(true)

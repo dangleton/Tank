@@ -97,6 +97,7 @@ public class JobDetailFormatter {
                     config.getAgentConfig().getTankClientName(proposedJobInstance.getTankClientClass()));
             addProperty(sb, "Agent VM Type", getVmDetails(config, proposedJobInstance.getVmInstanceType()));
             addProperty(sb, "Assign Elastic Ips", Boolean.toString(proposedJobInstance.isUseEips()));
+            addProperty(sb, "Use Spot Instances", Boolean.toString(proposedJobInstance.isUseSpot()));
             addProperty(sb, "Max Users per Agent", Integer.toString(proposedJobInstance.getNumUsersPerAgent()));
             addProperty(sb, "Estimated Cost", calculateCost(config, proposedJobInstance, regions, simulationTime));
             addProperty(sb, "Location", proposedJobInstance.getLocation());

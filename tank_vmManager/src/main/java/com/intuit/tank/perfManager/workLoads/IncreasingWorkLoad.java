@@ -78,7 +78,8 @@ public class IncreasingWorkLoad implements Runnable {
                 RequestAgents request = new RequestAgents(job.getId(), job.getReportingMode(), job.getLoggingProfile(),
                         region, users, job.getStopBehavior());
                 request.setVmInstanceType(job.getVmInstanceType());
-                request.setUserEips(job.isUseEips());
+                request.setUseEips(job.isUseEips());
+                request.setUseSpot(job.isUseSpot());
                 request.setNumUsersPerAgent(job.getNumUsersPerAgent());
                 agentDispatcher.processAgentsMessage(request);
             }

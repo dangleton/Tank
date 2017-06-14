@@ -113,6 +113,18 @@
                 value="#{jobMaker.useEips}" />
             </div>
           </div>
+          
+          <div class="formRow">
+            <div class="formLabelDiv">
+              <h:outputLabel for="useSpotCB"
+                value="Use Spot Instances"
+                styleClass="formLabel required" />
+            </div>
+            <div class="formInputDiv">
+              <p:selectBooleanCheckbox id="useSpotCB"
+                value="#{jobMaker.useSpot}" />
+            </div>
+          </div>
         </h:panelGroup>
 
         <div id="submitJobDiv" class="formRow">

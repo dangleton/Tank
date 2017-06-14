@@ -63,7 +63,7 @@ public class VMJobRequest extends VMRequest {
      * 
      * @param useEips
      */
-    public void setUserEips(boolean useEips) {
+    public void setUseEips(boolean useEips) {
         this.items.put(TankConstants.KEY_USE_EIPS, useEips);
     }
 
@@ -76,6 +76,24 @@ public class VMJobRequest extends VMRequest {
             return (Boolean) this.items.get(TankConstants.KEY_USE_EIPS);
         }
         return new TankConfig().getVmManagerConfig().isUseElasticIps();
+    }
+    /**
+     * 
+     * @param useEips
+     */
+    public void setUseSpot(boolean b) {
+        this.items.put(TankConstants.KEY_USE_SPOT, b);
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public boolean isUseSpot() {
+        if (this.items.get(TankConstants.KEY_USE_SPOT) != null) {
+            return (Boolean) this.items.get(TankConstants.KEY_USE_SPOT);
+        }
+        return new TankConfig().getVmManagerConfig().isUseSpot();
     }
 
     /**

@@ -95,6 +95,9 @@
 
 		<!-- connection timeout setting. set to zero to not have a timeout -->
 		<connection-timeout>15000</connection-timeout>
+		
+        <!-- connection timeout setting. set to zero to not have a timeout -->
+		<socket-timeout>30000</socket-timeout>
 
 		<status_report_interval_milis>30000</status_report_interval_milis>
 
@@ -152,6 +155,7 @@
 		<!-- <default-region>US_WEST_1</default-region> -->
 		<!-- set to true to default use of available eips for agents -->
 		<use-agent-elastic-ips>false</use-agent-elastic-ips>
+		<use-agent-spot>false</use-agent-spot>
 		<!-- reserved eips will not be used -->
 		<reserved-elastic-ips>
 			<!-- <eip>0.0.0.0</eip> -->
