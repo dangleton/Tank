@@ -36,6 +36,7 @@ import org.picketlink.Identity;
 import org.picketlink.authentication.Authenticator.AuthenticationStatus;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.RelationshipManager;
+import org.picketlink.idm.model.Account;
 import org.picketlink.idm.model.Attribute;
 import org.picketlink.idm.model.basic.BasicModel;
 import org.picketlink.idm.model.basic.Role;
@@ -60,6 +61,8 @@ public class RestSecurityFilter implements Filter {
 
     @Inject
     private RelationshipManager relationshipManager;
+
+    private UserDao userDao = new UserDao();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -96,8 +99,12 @@ public class RestSecurityFilter implements Filter {
         if (identity != null) {
             org.picketlink.idm.model.basic.User picketLinkUser = (org.picketlink.idm.model.basic.User) identity
                     .getAccount();
-            if (picketLinkUser != null && picketLinkUser instanceof TankUser) {
-                user = ((TankUser) picketLinkUser).getUserEntity();
+            if (picketLinkUser != null) {
+                if (picketLinkUser instanceof TankUser) {
+                    user = ((TankUser) picketLinkUser).getUserEntity();
+                } else {
+                    user = userDao.findByUserName(picketLinkUser.getLoginName());
+                }
             }
         }
         if (user == null) {
