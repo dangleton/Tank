@@ -1,6 +1,7 @@
 package com.intuit.tank.httpclient4;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 
@@ -9,7 +10,6 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.tomcat.util.net.URL;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -181,17 +181,17 @@ public class TankHttpClient4Test {
 //        Assert.assertEquals(response.getHttpCode(), 403);
     }
 
-    @Test(groups = TestGroups.FUNCTIONAL)
-    public void doPostMultipart() throws IOException {
-        BaseRequest request = getRequest(new TankHttpClient4(), "http://httpbin.org/post");
-        request.setContentType(BaseRequest.CONTENT_TYPE_MULTIPART);
-        request.setBody(createMultiPartBody());
-        request.doPost(null);
-        BaseResponse response = request.getResponse();
-        Assert.assertNotNull(response);
-        Assert.assertEquals(200, response.getHttpCode());
-        Assert.assertNotNull(response.getBody());
-    }
+//    @Test(groups = TestGroups.FUNCTIONAL)
+//    public void doPostMultipart() throws IOException {
+//        BaseRequest request = getRequest(new TankHttpClient4(), "http://httpbin.org/post");
+//        request.setContentType(BaseRequest.CONTENT_TYPE_MULTIPART);
+//        request.setBody(createMultiPartBody());
+//        request.doPost(null);
+//        BaseResponse response = request.getResponse();
+//        Assert.assertNotNull(response);
+//        Assert.assertEquals(200, response.getHttpCode());
+//        Assert.assertNotNull(response.getBody());
+//    }
 
     @Test(groups = TestGroups.FUNCTIONAL)
     public void doPostMultipartwithFile() throws IOException {

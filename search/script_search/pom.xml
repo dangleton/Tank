@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.intuit.tank</groupId>
     <artifactId>search-parent</artifactId>
-    <version>2.2.4-SNAPSHOT</version>
+    <version>2.2.4</version>
   </parent>
 
   <artifactId>script-search</artifactId>
@@ -42,12 +42,6 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>script-service</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
       <scope>test</scope>
     </dependency>
 
