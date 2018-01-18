@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.intuit.tank</groupId>
 		<artifactId>tank-parent</artifactId>
-		<version>2.2.4-SNAPSHOT</version>
+		<version>2.2.4</version>
 	</parent>
 
 	<artifactId>rest-parent</artifactId>
@@ -29,13 +29,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jboss.weld</groupId>
-			<artifactId>weld-core</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
+	      <groupId>org.apache.logging.log4j</groupId>
+	      <artifactId>log4j-core</artifactId>
 		</dependency>
 
 		<dependency>
@@ -67,6 +62,35 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>${version.groovy}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.spockframework</groupId>
+			<artifactId>spock-core</artifactId>
+			<version>${version.spock}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!--allows mocking of classes (in addition to interfaces)-->
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>1.6.5</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!--allows mocking of classes without default constructor-->
+		<dependency>
+			<groupId>org.objenesis</groupId>
+			<artifactId>objenesis</artifactId>
+			<version>2.5.1</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

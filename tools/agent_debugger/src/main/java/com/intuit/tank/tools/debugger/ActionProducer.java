@@ -52,12 +52,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.ws.rs.ProcessingException;
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import com.intuit.tank.AgentServiceClient;
 import com.intuit.tank.api.model.v1.agent.TankHttpClientDefinition;
@@ -989,6 +991,12 @@ public class ActionProducer {
             ret = JaxbUtil.unmarshall(xml, HDWorkload.class);
         } catch (JAXBException e) {
             JOptionPane.showMessageDialog(debuggerFrame, e.getMessage(), "Error unmarshalling xml",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (SAXException saxe) {
+            JOptionPane.showMessageDialog(debuggerFrame, saxe.getMessage(), "Error unmarshalling xml",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (ParserConfigurationException pce) {
+            JOptionPane.showMessageDialog(debuggerFrame, pce.getMessage(), "Error unmarshalling xml",
                     JOptionPane.ERROR_MESSAGE);
         }
         return ret;

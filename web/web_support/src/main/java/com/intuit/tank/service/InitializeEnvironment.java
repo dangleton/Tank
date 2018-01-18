@@ -16,19 +16,12 @@ package com.intuit.tank.service;
  * #L%
  */
 
-import java.util.Collection;
-
 import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Initialized;
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.picketlink.event.PartitionManagerCreateEvent;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.PartitionManager;
 
@@ -66,10 +59,6 @@ public class InitializeEnvironment {
         createDefaultGroups();
         createDefaultUsers();
         initialize = true;
-    }
-    
-    public void initObserve(@Observes @Initialized(ApplicationScoped.class) Object init) {
-        LOG.info("INIT... " + init);
     }
 
     /**
