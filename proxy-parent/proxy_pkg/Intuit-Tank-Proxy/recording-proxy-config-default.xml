@@ -9,5 +9,8 @@
 <body-exclusions>
 <rule check="response" header="content-type" match="contains">image</rule>
 <rule check="response" header="content-type" match="contains">pdf</rule>
+<rule check="response" header="content-type" match="contains">mp3</rule>
+<rule check="response" header="content-type" match="contains">mp4</rule>
+<rule check="response" header="content-type" match="contains">shockwave</rule>
 </body-exclusions>
 </recording-proxy-config>
