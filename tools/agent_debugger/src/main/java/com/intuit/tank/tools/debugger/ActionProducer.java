@@ -1,7 +1,5 @@
 package com.intuit.tank.tools.debugger;
 
-import java.awt.GridLayout;
-
 /*
  * #%L
  * Intuit Tank Agent Debugger
@@ -34,23 +32,16 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.imageio.ImageIO;
-import javax.net.ssl.SSLException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
-import javax.ws.rs.ProcessingException;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -167,20 +158,12 @@ public class ActionProducer {
     /**
      * 
      * @param serviceUrl
-     * @param pass
-     * @param user
      */
-    public void setServiceUrl(String serviceUrl, String user, char[] pass) {
+    public void setServiceUrl(String serviceUrl) {
         this.scriptServiceClient = new ScriptServiceClient(serviceUrl);
         this.projectServiceClient = new ProjectServiceClientV1(serviceUrl);
         this.dataFileClient = new DataFileClient(serviceUrl);
         this.agentServiceClient = new AgentServiceClient(serviceUrl);
-        if (StringUtils.isNotBlank(user)) {
-            this.scriptServiceClient.addAuth(user, new String(pass).trim());
-            this.projectServiceClient.addAuth(user, new String(pass).trim());
-            this.dataFileClient.addAuth(user, new String(pass).trim());
-            this.agentServiceClient.addAuth(user, new String(pass).trim());
-        }
         PanelBuilder.updateServiceUrl(serviceUrl);
         setChoiceComboBoxOptions(debuggerFrame.getTankClientChooser());
     }
@@ -401,22 +384,11 @@ public class ActionProducer {
             ret = new AbstractAction(ACTION_SELECT_TANK) {
                 private static final long serialVersionUID = 1L;
                 final JComboBox<String> cb = getComboBox();
-                final JTextField userTF = new JTextField();
-
-                final JPasswordField passTF = new JPasswordField();
-                final JComponent[] inputs = new JComponent[] {
-                        new JLabel("URL: "),
-                        cb,
-                        new JLabel("User: "),
-                        userTF,
-                        new JLabel("Pass: "),
-                        passTF
-                };
 
                 @Override
                 public void actionPerformed(ActionEvent event) {
                     try {
-                        int selected = JOptionPane.showConfirmDialog(debuggerFrame, inputs,
+                        int selected = JOptionPane.showConfirmDialog(debuggerFrame, cb,
                                 "Enter the base URL to Tank:", JOptionPane.OK_CANCEL_OPTION,
                                 JOptionPane.QUESTION_MESSAGE);
                         if (selected == JOptionPane.OK_OPTION) {
@@ -432,25 +404,9 @@ public class ActionProducer {
                                     url = "http://" + url;
                                 }
                                 try {
-                                    ScriptServiceClient ssc = new ScriptServiceClient(url);
-                                    if (StringUtils.isNotBlank(userTF.getText())) {
-                                        ssc.addAuth(userTF.getText().trim(), new String(passTF.getPassword()).trim());
-                                    }
-                                    ssc.ping();
-                                    setServiceUrl(url, userTF.getText().trim(),
-                                            passTF.getPassword());
-                                } catch (ProcessingException e) {
-                                    LOG.error("Error making call: " + e, e);
-                                    if (e.getCause() instanceof SSLException) {
-                                        showError("SSl Exception: " + e.toString()
-                                                + ". This could be because of invalid certificates. Please see logs for more detail.");
-
-                                    } else {
-                                        showError("Exception: " + e.toString()
-                                                + ". Please see logs for more detail.");
-                                    }
-                                } catch (RuntimeException e) {
-                                    LOG.error("Error making call: " + e, e);
+                                    new ScriptServiceClient(url).ping();
+                                    setServiceUrl(url);
+                                } catch (Exception e) {
                                     showError("Cannot connect to Tank at the url " + url
                                             + ". \nExample: http://tank.mysite.com/");
                                 }
@@ -460,27 +416,19 @@ public class ActionProducer {
                         showError("Error opening file: " + e);
                     }
                 }
-
             };
             ret.putValue(Action.SHORT_DESCRIPTION, "Enter a Tank URL.");
             actionMap.put(ACTION_SELECT_TANK, ret);
         }
         return ret;
     }
-
-    private JPanel getUrlPanel() {
-        JPanel panel = new JPanel(new GridLayout(3, 2));
-        panel.add(new JLabel("URL: "));
-        panel.add(getComboBox());
-        final JComboBox<String> cb = getComboBox();
-        return null;
-    }
-
+   
+    
     public void setChoiceComboBoxOptions(JComboBox<TankClientChoice> cb) {
         cb.removeAllItems();
         try {
             TankHttpClientDefinitionContainer clientDefinitions = agentServiceClient.getClientDefinitions();
-            for (TankHttpClientDefinition def : clientDefinitions.getDefinitions()) {
+            for(TankHttpClientDefinition def : clientDefinitions.getDefinitions()) {
                 TankClientChoice c = new TankClientChoice(def.getName(), def.getClassName());
                 cb.addItem(c);
                 if (def.getClassName().equals(clientDefinitions.getDefaultDefinition())) {
@@ -488,10 +436,11 @@ public class ActionProducer {
                 }
             }
         } catch (Exception e) {
-            // set to default
+        	// This is just a filler for the UI before you select a tank instance to import from.
             cb.addItem(new TankClientChoice("Apache HttpClient 3.1", "com.intuit.tank.httpclient3.TankHttpClient3"));
             cb.addItem(new TankClientChoice("Apache HttpClient 4.5", "com.intuit.tank.httpclient4.TankHttpClient4"));
-            cb.setSelectedIndex(1);
+            cb.addItem(new TankClientChoice("Apache HttpClient 5", "com.intuit.tank.httpclient5.TankHttpClient5"));
+            cb.setSelectedIndex(2);
         }
     }
 
@@ -1003,7 +952,8 @@ public class ActionProducer {
     }
 
     public enum IconSize {
-        SMALL, LARGE
+        SMALL,
+        LARGE
     }
 
 }
