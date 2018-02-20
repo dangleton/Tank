@@ -22,7 +22,6 @@
     <module>http_client_4</module>
     <module>http_client_5</module>
     <module>agent_common</module>
-    <module>ok_http_client</module>
   </modules>
 
   <profiles>
