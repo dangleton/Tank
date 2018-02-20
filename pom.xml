@@ -1268,6 +1268,11 @@
       <id>Maven Central 2</id>
       <url>http://central.maven.org/maven2</url>
     </repository>
+    <repository>
+      <id>cas_repo</id>
+      <name>CAS Repo</name>
+      <url>http://maven.qualcomm.com/content/repositories/cas_repo</url>
+    </repository>
   </repositories>
   <pluginRepositories>
 
