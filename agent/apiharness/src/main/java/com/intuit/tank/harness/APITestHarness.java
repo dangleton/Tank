@@ -1,5 +1,7 @@
 package com.intuit.tank.harness;
 
+import java.io.BufferedWriter;
+
 /*
  * #%L
  * Intuit Tank Agent (apiharness)
@@ -14,8 +16,14 @@ package com.intuit.tank.harness;
  */
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
@@ -29,8 +37,22 @@ import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -74,7 +96,6 @@ public class APITestHarness {
 
     private AgentRunData agentRunData;
 
-    private static final int BATCH_SIZE = 100;
     private String testPlans = "";
     private String instanceId;
     private List<String> testPlanXmls = null;
@@ -101,10 +122,14 @@ public class APITestHarness {
     private TPSMonitor tpsMonitor;
     private ResultsReporter resultsReporter;
     private String tankHttpClientClass;
-    
+
     private Calendar c = Calendar.getInstance();
     private Date send = new Date();
     private int interval = 15; // SECONDS
+
+    private CloseableHttpClient httpClient;
+    private HttpClientContext context;
+    private HttpHost targetHost;
 
     static {
         try {
@@ -115,7 +140,8 @@ public class APITestHarness {
         try {
             java.security.Security.setProperty("networkaddress.cache.negative.ttl", "0");
         } catch (Throwable e1) {
-            LOG.warn(LogUtil.getLogMessage("Error setting dns negative timeout: " + e1.toString(), LogEventType.System));
+            LOG.warn(
+                    LogUtil.getLogMessage("Error setting dns negative timeout: " + e1.toString(), LogEventType.System));
         }
         try {
             System.setProperty("jdk.certpath.disabledAlgorithms", "");
@@ -160,7 +186,8 @@ public class APITestHarness {
         try {
             java.security.Security.setProperty("networkaddress.cache.negative.ttl", "0");
         } catch (Throwable e1) {
-            LOG.warn(LogUtil.getLogMessage("Error setting dns negative timeout: " + e1.toString(), LogEventType.System));
+            LOG.warn(
+                    LogUtil.getLogMessage("Error setting dns negative timeout: " + e1.toString(), LogEventType.System));
         }
         if (args.length < 1) {
             usage();
@@ -299,7 +326,8 @@ public class APITestHarness {
         System.out.println("-time=<time>:  The time (min) of the simulation");
         System.out.println("-users=<# of total users>:  The number of total users to run concurrently");
         System.out
-                .println("-start=<# of users to start with>:  The number of users to run concurrently when test begins");
+                .println(
+                        "-start=<# of users to start with>:  The number of users to run concurrently when test begins");
         System.out.println("-http=<controller_base_url>:  The url of the controller to get test info from");
         System.out.println("-d:  Turns debug on to step through each request");
         System.out.println("-t:  Turns trace on to print each request");
@@ -312,6 +340,30 @@ public class APITestHarness {
             baseUrl = AmazonUtil.getControllerBaseUrl();
         }
         AgentServiceClient client = new AgentServiceClient(baseUrl);
+        httpClient = HttpClientBuilder.create().build();
+        context = HttpClientContext.create();
+        if (AmazonUtil.isInAmazon()) {
+            client.addAuth(TankConstants.TANK_USER_SYSTEM, AmazonUtil.getTankApiToken());
+            try {
+                URL url = new URL(baseUrl);
+                targetHost = new HttpHost(url.getHost(), url.getPort(), url.getProtocol());
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
+                        new UsernamePasswordCredentials(TankConstants.TANK_USER_SYSTEM, AmazonUtil.getTankApiToken()));
+                // Create AuthCache instance
+                AuthCache authCache = new BasicAuthCache();
+                // Generate BASIC scheme object and add it to the local auth cache
+                BasicScheme basicAuth = new BasicScheme();
+                authCache.put(targetHost, basicAuth);
+                // Add AuthCache to the execution context
+                context.setCredentialsProvider(credsProvider);
+                context.setAuthCache(authCache);
+            } catch (MalformedURLException e) {
+                LOG.error("Error setting auth: " + e, e);
+            }
+        }
+
         String instanceUrl = null;
         int tries = 0;
         while (instanceUrl == null) {
@@ -330,7 +382,7 @@ public class APITestHarness {
                 } else {
                     LOG.error("Error getting amazon host. maybe local.");
                     String publicIp = new HostInfo().getPublicIp();
-                    
+
                     if (!publicIp.equals(HostInfo.UNKNOWN)) {
                         instanceUrl = "http://" + publicIp + ":"
                                 + tankConfig.getAgentConfig().getAgentPort();
@@ -406,20 +458,30 @@ public class APITestHarness {
      * 
      */
     public void writeXmlToFile(String scriptUrl) throws IOException {
-        File file = new File("script.xml");
-        LOG.info(LogUtil.getLogMessage("Writing xml to " + file.getAbsolutePath()));
+        File f = new File("script.xml");
+        LOG.info(LogUtil.getLogMessage("Writing xml to " + f.getAbsolutePath()));
+        Writer out = null;
+        InputStream is = null;
         int count = 0;
 
         while (count++ < MAX_RETRIES) {
             try {
-                if (file.exists()) {
-                	file.delete();
-                    file = new File("script.xml");
+                if (f.exists()) {
+                    f.delete();
+                    f = new File("script.xml");
                 }
-                URL url = new URL(scriptUrl);
-                LOG.info("Downloading file from url " + scriptUrl + " to file " + file.getAbsolutePath());
-                FileUtils.copyURLToFile(url, file);
-                String scriptXML = FileUtils.readFileToString(file, "UTF-8");
+
+                LOG.info("Downloading file from url " + scriptUrl + " to file " + f.getAbsolutePath());
+                CloseableHttpResponse response = httpClient.execute(targetHost, new HttpGet(scriptUrl), context);
+                checkResponse(response);
+                is = response.getEntity().getContent();
+
+                out = new BufferedWriter(new OutputStreamWriter(
+                        new FileOutputStream(f), "UTF8"));
+                IOUtils.copy(new InputStreamReader(is), out);
+                IOUtils.closeQuietly(is);
+                IOUtils.closeQuietly(out);
+                String scriptXML = FileUtils.readFileToString(f, "UTF-8");
                 List<String> tps = new ArrayList<String>();
                 tps.add(scriptXML);
                 setTestPlans(tps);
@@ -427,6 +489,8 @@ public class APITestHarness {
                 break;
             } catch (Exception e) {
                 if (count < MAX_RETRIES) {
+                    IOUtils.closeQuietly(is);
+                    IOUtils.closeQuietly(out);
                     LOG.warn(LogUtil.getLogMessage("Failed to download script file because of: " + e.toString()
                             + ". Will try "
                             + (MAX_RETRIES - count) + " more times.", LogEventType.System));
@@ -439,7 +503,16 @@ public class APITestHarness {
                     LOG.error(LogUtil.getLogMessage("Error writing script file: " + e, LogEventType.IO), e);
                     throw new RuntimeException(e);
                 }
+            } finally {
+                IOUtils.closeQuietly(is);
+                IOUtils.closeQuietly(out);
             }
+        }
+    }
+
+    private void checkResponse(CloseableHttpResponse response) {
+        if (response.getStatusLine().getStatusCode() != 200) {
+            throw new RuntimeException("Error getting resource " + response.getStatusLine());
         }
     }
 
@@ -452,14 +525,21 @@ public class APITestHarness {
             }
         }
         File dataFile = new File(dataFileDir, dataFileRequest.getFileName());
+        FileOutputStream fos = null;
+        InputStream is = null;
         int count = 0;
         while (count++ < MAX_RETRIES) {
             try {
-                URL url = new URL(dataFileRequest.getFileUrl());
                 LOG.info(LogUtil.getLogMessage(
                         "writing file " + dataFileRequest.getFileName() + " to " + dataFile.getAbsolutePath()
-                                + " from url " + url.toExternalForm(), LogEventType.System));
-                FileUtils.copyURLToFile(url, dataFile);
+                        + " from url " + dataFileRequest.getFileUrl(), LogEventType.System));
+                CloseableHttpResponse response = httpClient.execute(targetHost, new HttpGet(dataFileRequest.getFileUrl()), context);
+                checkResponse(response);
+                is = response.getEntity().getContent();
+
+                fos = new FileOutputStream(dataFile);
+                IOUtils.copy(is, fos);
+                IOUtils.closeQuietly(fos);
                 if (dataFileRequest.isDefault()
                         && !dataFileRequest.getFileName().equals(TankConstants.DEFAULT_CSV_FILE_NAME)) {
                     File defaultFile = new File(dataFileDir, TankConstants.DEFAULT_CSV_FILE_NAME);
@@ -483,6 +563,9 @@ public class APITestHarness {
                     LOG.error(LogUtil.getLogMessage("Error downloading csv file: " + e, LogEventType.IO), e);
                     throw new RuntimeException(e);
                 }
+            } finally {
+                IOUtils.closeQuietly(is);
+                IOUtils.closeQuietly(fos);
             }
         }
 
@@ -866,17 +949,17 @@ public class APITestHarness {
     }
 
     public void queueTimingResult(TankResult result) {
-    	if (logTiming) {
-		    results.add(result);
-		    //if (results.size() >= BATCH_SIZE) {
-		    if (send.before(new Date())) {
-		        sendBatchToDB(true);
-		        
-				c.setTime(new Date());
-				c.add(Calendar.SECOND, interval);
-				send = new Date(c.getTime().getTime());
-		    }
-    	}
+        if (logTiming) {
+            results.add(result);
+            // if (results.size() >= BATCH_SIZE) {
+            if (send.before(new Date())) {
+                sendBatchToDB(true);
+
+                c.setTime(new Date());
+                c.add(Calendar.SECOND, interval);
+                send = new Date(c.getTime().getTime());
+            }
+        }
     }
 
     private void sendBatchToDB(boolean asynch) {
@@ -955,12 +1038,11 @@ public class APITestHarness {
     }
 
     /**
-     * @param tankHttpClientClass the tankHttpClientClass to set
+     * @param tankHttpClientClass
+     *            the tankHttpClientClass to set
      */
     public void setTankHttpClientClass(String tankHttpClientClass) {
         this.tankHttpClientClass = tankHttpClientClass;
     }
-    
-    
 
 }
