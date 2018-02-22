@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -87,7 +88,7 @@ public class TankHttpClient4 implements TankHttpClient {
      */
     public TankHttpClient4() {
         httpclient = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
-        requestConfig = RequestConfig.custom().setSocketTimeout(30000)
+        requestConfig = RequestConfig.custom().setSocketTimeout(60000)
         		.setConnectTimeout(30000)
         		.setCircularRedirectsAllowed(true)
         		.setAuthenticationEnabled(true)
@@ -112,6 +113,7 @@ public class TankHttpClient4 implements TankHttpClient {
                 .setCookieSpec(CookieSpecs.STANDARD)
                 .setMaxRedirects(100).build();
         context.setRequestConfig(requestConfig);
+        
     }
 
     /*
@@ -263,6 +265,7 @@ public class TankHttpClient4 implements TankHttpClient {
     private void sendRequest(BaseRequest request, @Nonnull HttpRequestBase method, String requestBody) {
         String uri = null;
         long waitTime = 0L;
+        long startTime = 0L;
         CloseableHttpResponse response = null;
         try {
             uri = method.getURI().toString();
@@ -275,7 +278,7 @@ public class TankHttpClient4 implements TankHttpClient {
             }
             request.logRequest(uri, requestBody, method.getMethod(), request.getHeaderInformation(), cookies, false);
             setHeaders(request, method, request.getHeaderInformation());
-            long startTime = System.currentTimeMillis();
+            startTime = System.currentTimeMillis();
             request.setTimestamp(new Date(startTime));
             response = httpclient.execute(method, context);
 
@@ -296,6 +299,11 @@ public class TankHttpClient4 implements TankHttpClient {
             LOG.error(request.getLogUtil().getLogMessage("UnknownHostException to url: " + uri + " |  error: " + uhex.toString(), LogEventType.IO), uhex);
         } catch (SocketException sex) {
             LOG.error(request.getLogUtil().getLogMessage("SocketException to url: " + uri + " |  error: " + sex.toString(), LogEventType.IO), sex);
+        } catch (SocketTimeoutException ex) {
+            long timeSpent = System.currentTimeMillis() - startTime;
+            LOG.error("SocketTimeout after " + timeSpent + " ms. : socket timout set to " + context.getRequestConfig().getSocketTimeout() + " ms. connction timeout set to " + context.getRequestConfig().getConnectTimeout());
+            LOG.error(request.getLogUtil().getLogMessage("Could not do " + method.getMethod() + " to url " + uri + " |  error: " + ex.toString(), LogEventType.IO), ex);
+            throw new RuntimeException(ex);
         } catch (Exception ex) {
             LOG.error(request.getLogUtil().getLogMessage("Could not do " + method.getMethod() + " to url " + uri + " |  error: " + ex.toString(), LogEventType.IO), ex);
             throw new RuntimeException(ex);

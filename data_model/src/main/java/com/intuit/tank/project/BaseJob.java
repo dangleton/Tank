@@ -63,7 +63,7 @@ public abstract class BaseJob extends BaseEntity {
     private int baselineVirtualUsers;
 
     @Column(name = "vm_instance_type", columnDefinition = "varchar(255) NULL DEFAULT 'c3.2xlarge'")
-    private String vmInstanceType = "c3.2xlarge";
+    private String vmInstanceType;
 
     @Column(name = "num_users_per_agent", columnDefinition = "INT(11) NOT NULL DEFAULT '4000'")
     private int numUsersPerAgent = 4000;
