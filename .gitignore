@@ -11,6 +11,7 @@
 *.swp
 *.log
 bin
+pom.xml.versionsBackup
 git-daemon-export-ok
 target
 bin-debug
