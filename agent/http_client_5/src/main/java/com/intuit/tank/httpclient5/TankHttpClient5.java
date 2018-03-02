@@ -272,6 +272,16 @@ public class TankHttpClient5 implements TankHttpClient {
         }
     }
 
+    public void setConnectionTimeout(long connectionTimeout, long socketTimeout) {
+        requestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout, TimeUnit.MILLISECONDS)
+                        .setConnectTimeout(connectionTimeout, TimeUnit.MILLISECONDS)
+                        .setCircularRedirectsAllowed(true)
+                        .setAuthenticationEnabled(true)
+                .setRedirectsEnabled(true)
+                .setCookieSpec(CookieSpecs.STANDARD)
+                .setMaxRedirects(100).build();
+        context.setRequestConfig(requestConfig);
+    }
     private void sendRequest(BaseRequest request, @Nonnull ClassicHttpRequest method, String requestBody) {
         String uri = null;
         long waitTime = 0L;

@@ -32,6 +32,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -52,8 +53,7 @@ public class JobConfiguration extends BaseJob {
     private Workload workload;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "job_configuration_to_job_notification", joinColumns = @JoinColumn(name = "job_configuration_id"),
-            inverseJoinColumns = @JoinColumn(name = "notification_id"))
+    @JoinTable(name = "job_configuration_to_job_notification", joinColumns = @JoinColumn(name = "job_configuration_id"), inverseJoinColumns = @JoinColumn(name = "notification_id"))
     private Set<JobNotification> notifications = new HashSet<JobNotification>();
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -62,8 +62,7 @@ public class JobConfiguration extends BaseJob {
     private Set<Integer> dataFileIds = new HashSet<Integer>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "job_configuration_to_job_regions", joinColumns = @JoinColumn(name = "job_configuration_id"),
-            inverseJoinColumns = @JoinColumn(name = "region_id"))
+    @JoinTable(name = "job_configuration_to_job_regions", joinColumns = @JoinColumn(name = "job_configuration_id"), inverseJoinColumns = @JoinColumn(name = "region_id"))
     private Set<JobRegion> jobRegions = new HashSet<JobRegion>();
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -80,15 +79,17 @@ public class JobConfiguration extends BaseJob {
     }
 
     public void readConfig() {
-	    List<VmInstanceType> types = new TankConfig().getVmManagerConfig().getInstanceTypes();
-	    for (VmInstanceType type : types) {
-	        if (type.isDefault()) {
-	        	setVmInstanceType( type.getName());
-	        	setNumUsersPerAgent(type.getUsers());
-	        }
-	    }
+        List<VmInstanceType> types = new TankConfig().getVmManagerConfig().getInstanceTypes();
+        if (StringUtils.isBlank(getVmInstanceType())) {
+            for (VmInstanceType type : types) {
+                if (type.isDefault()) {
+                    setVmInstanceType(type.getName());
+                    setNumUsersPerAgent(type.getUsers());
+                }
+            }
+        }
     }
-    
+
     /**
      * @return the workload
      */

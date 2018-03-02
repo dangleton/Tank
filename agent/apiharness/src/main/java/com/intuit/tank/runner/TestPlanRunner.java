@@ -406,6 +406,7 @@ public class TestPlanRunner implements Runnable {
             TankHttpClient ret = (TankHttpClient) Class.forName(APITestHarness.getInstance().getTankHttpClientClass()).newInstance();
             Long connectionTimeout = APITestHarness.getInstance().getTankConfig().getAgentConfig().getConnectionTimeout();
             Long socketTimeout = APITestHarness.getInstance().getTankConfig().getAgentConfig().getSocketTimeout();
+            LOG.info("setConnectionTimeout:  connectionTimeout=" + connectionTimeout + "  :  socketTimeout=" + socketTimeout);
             if (connectionTimeout != null) {
                 ret.setConnectionTimeout(connectionTimeout, socketTimeout);
             }
