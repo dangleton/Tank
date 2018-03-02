@@ -87,7 +87,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-        <module>test_support</module>
+        <!-- <module>test_support</module> -->
         <module>agent</module>
         <module>tools</module>
         <module>rest</module>
@@ -149,7 +149,7 @@
         <activeByDefault>false</activeByDefault>
       </activation>
       <modules>
-        <module>test_support</module>
+        <!-- <module>test_support</module> -->
         <module>doc</module>
         <module>agent</module>
         <module>tools</module>
@@ -188,7 +188,7 @@
         <module>harness_data</module>
         <module>search</module>
         <module>reporting</module>
-        <module>test_support</module>
+        <!-- <module>test_support</module> -->
         <module>api</module>
         <module>data_model</module>
         <module>data_access</module>
