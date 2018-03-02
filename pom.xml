@@ -149,7 +149,7 @@
         <activeByDefault>false</activeByDefault>
       </activation>
       <modules>
-        <module>test_support</module>
+        <!-- <module>test_support</module> -->
         <module>doc</module>
         <module>agent</module>
         <module>tools</module>
@@ -188,7 +188,7 @@
         <module>harness_data</module>
         <module>search</module>
         <module>reporting</module>
-        <module>test_support</module>
+        <!-- <module>test_support</module> -->
         <module>api</module>
         <module>data_model</module>
         <module>data_access</module>
@@ -1275,13 +1275,6 @@
     </repository>
   </repositories>
   <pluginRepositories>
-
-<!--    <pluginRepository>
-      <id>jboss-public-repository</id>
-      <name>JBoss Public Maven Repository</name>
-      <url>https://repository.jboss.org/nexus/content/groups/public</url>
-      <layout>default</layout>
-    </pluginRepository>-->
     <pluginRepository>
      <id>JBoss Repo</id>
      <url>https://repository.jboss.org/nexus/content/repositories/releases</url>
