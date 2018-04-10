@@ -332,13 +332,8 @@
       <artifactId>jsp-api</artifactId>
       <scope>test</scope>
     </dependency>
-    
-    <dependency>
-        <groupId>javax.annotation</groupId>
-        <artifactId>jsr250-api</artifactId>
-        <version>${version.jsr250}</version>
-        <scope>provided</scope>
-    </dependency>
+
+
   </dependencies>
 
 
@@ -347,6 +342,13 @@
 
     <dependencies>
 
+      <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>jsr250-api</artifactId>
+        <version>${version.jsr250}</version>
+        <scope>provided</scope>
+      </dependency>
+      
       <dependency>
         <groupId>net.sf.docbook</groupId>
         <artifactId>docbook</artifactId>
@@ -1287,7 +1289,7 @@
       <id>Maven Central 2</id>
       <url>http://central.maven.org/maven2</url>
     </repository>
-   
+
   </repositories>
   <pluginRepositories>
     <pluginRepository>

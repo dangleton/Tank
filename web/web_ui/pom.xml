@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -70,7 +71,7 @@
                         <include>${cert.p12}</include>
                       </includes>
                       <targetPath>${project.build.directory}/tank/tools</targetPath>
-                      
+
                     </resource>
                     <resource>
                       <directory>${project.parent.parent.basedir}/agent/apiharness_pkg/target</directory>
@@ -101,8 +102,8 @@
           </plugin>
 
           <plugin>
-		    <groupId>com.webcohesion.enunciate</groupId>
-		    <artifactId>enunciate-maven-plugin</artifactId>
+            <groupId>com.webcohesion.enunciate</groupId>
+            <artifactId>enunciate-maven-plugin</artifactId>
             <configuration>
               <configFile>enunciate.xml</configFile>
             </configuration>
@@ -138,7 +139,7 @@
       <artifactId>tank-common</artifactId>
       <version>${project.version}</version>
     </dependency>
-   
+
 
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -252,8 +253,8 @@
 
     <!-- enunciate dependencies -->
     <dependency>
-	  <groupId>com.webcohesion.enunciate</groupId>
-	  <artifactId>enunciate-core</artifactId>
+      <groupId>com.webcohesion.enunciate</groupId>
+      <artifactId>enunciate-core</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -284,8 +285,8 @@
     </dependency>
 
     <dependency>
-	    <groupId>com.itextpdf</groupId>
-	    <artifactId>itextpdf</artifactId>
+      <groupId>com.itextpdf</groupId>
+      <artifactId>itextpdf</artifactId>
     </dependency>
 
     <dependency>
@@ -302,6 +303,12 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>jsr250-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
   </dependencies>
