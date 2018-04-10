@@ -39,6 +39,7 @@
     <version.picketlink.javaee.bom>2.7.1.Final</version.picketlink.javaee.bom>
 
     <version.enunciate>2.9.1</version.enunciate>
+    <version.jsr250>1.0</version.jsr250>
 
     <version.mojarra>2.2.14</version.mojarra>
     <version.jsf-api>2.2.14</version.jsf-api>
@@ -330,6 +331,13 @@
       <groupId>javax.servlet.jsp</groupId>
       <artifactId>jsp-api</artifactId>
       <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>jsr250-api</artifactId>
+        <version>${version.jsr250}</version>
+        <scope>provided</scope>
     </dependency>
   </dependencies>
 
