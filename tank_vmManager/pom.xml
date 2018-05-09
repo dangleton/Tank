@@ -23,9 +23,6 @@
       <version>${project.version}</version>
     </dependency>
 
-    <!-- <dependency> <groupId>${project.groupId}</groupId> <artifactId>reporting-db</artifactId> 
-      <version>${project.version}</version> </dependency> -->
-
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>tank-common</artifactId>
