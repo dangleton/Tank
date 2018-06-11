@@ -118,7 +118,7 @@ public class RequestRunner implements Runner {
         }
 
         host = processHost(request.getHost());
-        loggingKey = request.getLoggingKey();
+        loggingKey = variables.evaluate(request.getLoggingKey());
         method = request.getMethod();
         path = processPath(request.getPath());
         reqFormat = StringUtils.isEmpty(request.getReqFormat()) ? "nvp" : request.getReqFormat();
@@ -237,6 +237,7 @@ public class RequestRunner implements Runner {
                 builder.withError(true);
             }
             if (!StringUtils.isEmpty(loggingKey)) {
+                
                 builder.withRequestName(loggingKey);
                 APITestHarness.getInstance().queueTimingResult(builder.build());
             }
