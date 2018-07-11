@@ -174,7 +174,7 @@ public class LogicStepEditor implements Serializable {
             logMap("Variables", vars.getVaribleValues(), outputLogger);
             outputLogger.logLine(DASHES + " script " + DASHES);
             ScriptIOBean ioBean = new ScriptRunner().runScript(name, scriptToRun,
-                    new ScriptEngineManager().getEngineByExtension("js"), inputs, outputLogger);
+                    new ScriptEngineManager().getEngineByName("nashorn"), inputs, outputLogger);
             logMap("Outputs", ioBean.getOutputs(), outputLogger);
             logMap("Variables", vars.getVaribleValues(), outputLogger);
         } catch (Exception e) {

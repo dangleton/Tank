@@ -43,8 +43,9 @@
 
     <version.mojarra>2.2.14</version.mojarra>
     <version.jsf-api>2.2.14</version.jsf-api>
-    <version.primefaces>6.1</version.primefaces>
-    <version.primefaces-ext>6.1.0</version.primefaces-ext>
+    <version.primefaces>6.2</version.primefaces>
+    <version.primefaces-ext>6.2.7</version.primefaces-ext>
+    <version.primefaces-ext-codemirror>6.1.1</version.primefaces-ext-codemirror>
     <version.jsr166>1.7.0</version.jsr166>
     <version.surefire>2.20</version.surefire>
     <version.jersey>2.25.1</version.jersey>
@@ -469,11 +470,11 @@
         <version>${version.primefaces-ext}</version>
       </dependency>
 
-      <dependency>
+     <!--  <dependency>
         <groupId>org.primefaces.extensions</groupId>
         <artifactId>resources-codemirror</artifactId>
-        <version>${version.primefaces-ext}</version>
-      </dependency>
+        <version>${version.primefaces-ext-codemirror}</version>
+      </dependency> -->
 
       <dependency>
         <groupId>com.ocpsoft</groupId>

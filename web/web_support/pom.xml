@@ -145,10 +145,10 @@
       <artifactId>resources-ckeditor</artifactId>
     </dependency>
 
-    <dependency>
+   <!--  <dependency>
       <groupId>org.primefaces.extensions</groupId>
       <artifactId>resources-codemirror</artifactId>
-    </dependency>
+    </dependency> -->
 
     <dependency>
       <groupId>commons-fileupload</groupId>
