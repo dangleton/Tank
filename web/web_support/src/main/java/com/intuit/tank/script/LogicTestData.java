@@ -62,9 +62,14 @@ public class LogicTestData implements Serializable {
         varMap.put("mode", "test");
         varMap.put("THREAD_ID", Long.toString(Thread.currentThread().getId()));
         for (ScriptStep s : script.getScriptSteps()) {
-            for (String key : ScriptUtil.getDeclaredVariables(s).keySet()) {
+            for (Entry<String, String> entry : ScriptUtil.getDeclaredVariables(s).entrySet()) {
+                String key = entry.getKey();
                 if (!varMap.containsKey(key)) {
-                    varMap.put(key, "");
+                    String value = entry.getValue();
+                    if (StringUtils.isBlank(value)) {
+                        value = "value";
+                    }
+                    varMap.put(key, value);
                 }
             }
         }
@@ -156,7 +161,10 @@ public class LogicTestData implements Serializable {
      * @return the varMap
      */
     public List<Map.Entry<String, String>> getVariables() {
-        ArrayList<Entry<String, String>> ret = new ArrayList<Map.Entry<String, String>>(varMap.entrySet());
+        ArrayList<Entry<String, String>> ret = new ArrayList<Map.Entry<String, String>>();
+        for (Entry<String, String> entry : varMap.entrySet()) {
+            ret.add(new MapEntry(entry));
+        }
         Collections.sort(ret, new MapEntryComparator());
         return ret;
     }
@@ -306,6 +314,40 @@ public class LogicTestData implements Serializable {
             return o1.getKey().compareTo(o2.getKey());
         }
 
+    }
+    public static class MapEntry implements Entry<String, String> {
+        
+        private Entry<String, String> entry;
+        
+        
+        public MapEntry(Entry<String, String> entry) {
+            super();
+            this.entry = entry;
+        }
+        
+
+        @Override
+        public String getKey() {
+            return entry.getKey();
+        }
+
+        @Override
+        public String getValue() {
+            return entry.getValue();
+        }
+
+        @Override
+        public String setValue(String value) {
+            return entry.setValue(value);
+        }
+        
+        public String getEntryValue() {
+            return getValue();
+        }
+        public void setEntryValue(String value) {
+            setValue(value);
+        }
+        
     }
 
 }
